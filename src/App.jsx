@@ -36,15 +36,15 @@ const AdminLayout = ({ user, onLogout, children, activeTab, setActiveTab }) => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row">
-      
+
       {/* Mobile Top Navbar */}
       <div className="md:hidden bg-slate-900 text-white p-4 flex items-center justify-between shadow-md z-30">
         <div className="flex items-center gap-2">
           <img src="/logo.png" alt="Mamun Socks" className="w-8 h-8 rounded-lg bg-white p-0.5" />
           <span className="font-bold text-sm">Mamun Socks Admin</span>
         </div>
-        <button 
-          onClick={() => setSidebarOpen(!sidebarOpen)} 
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
           className="p-1 text-slate-300 hover:text-white"
         >
           {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
@@ -87,7 +87,7 @@ const AdminLayout = ({ user, onLogout, children, activeTab, setActiveTab }) => {
             <p className="font-bold text-slate-200 truncate">{user.name}</p>
             <p className="text-[10px] text-slate-500 capitalize">@{user.username}</p>
           </div>
-          <button 
+          <button
             onClick={onLogout}
             className="p-2 text-slate-400 hover:text-white bg-slate-800/40 hover:bg-slate-800 rounded-xl transition-all"
             title="Keluar"
@@ -99,7 +99,7 @@ const AdminLayout = ({ user, onLogout, children, activeTab, setActiveTab }) => {
 
       {/* Main Body */}
       <div className="flex-1 flex flex-col min-w-0">
-        
+
         {/* Top Header Controls (Desktop only) */}
         <header className="hidden md:flex bg-white border-b border-slate-100 px-8 py-4 items-center justify-between shadow-sm z-20">
           <div>
@@ -178,7 +178,7 @@ export default function App() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
         <div className="flex flex-col items-center gap-4">
-          <img src="/logo.png" alt="Logo" className="w-16 h-16 rounded-2xl animate-spin" />
+          <img src="/logo.png" alt="Logo" className="w-16 h-16 rounded-2xl" />
           <div className="h-1.5 w-32 bg-slate-800 rounded-full overflow-hidden">
             <div className="h-full bg-emerald-500 w-1/2 rounded-full animate-pulse" />
           </div>
@@ -191,33 +191,33 @@ export default function App() {
   return (
     <BrowserRouter>
       <Toaster position="top-center" reverseOrder={false} />
-      
+
       <Routes>
         {/* Auth Pages */}
-        <Route 
-          path="/login" 
-          element={user ? <Navigate to={user.role === 'admin' ? '/admin' : '/'} replace /> : <Login onLoginSuccess={handleLoginSuccess} />} 
+        <Route
+          path="/login"
+          element={user ? <Navigate to={user.role === 'admin' ? '/admin' : '/'} replace /> : <Login onLoginSuccess={handleLoginSuccess} />}
         />
-        <Route 
-          path="/register" 
-          element={user ? <Navigate to="/" replace /> : <Register />} 
+        <Route
+          path="/register"
+          element={user ? <Navigate to="/" replace /> : <Register />}
         />
 
         {/* Customer Route */}
-        <Route 
-          path="/" 
+        <Route
+          path="/"
           element={
             user && user.role === 'admin' ? (
               <Navigate to="/admin" replace />
             ) : (
               <MarketplaceHome user={user} onLogout={handleLogout} />
             )
-          } 
+          }
         />
 
         {/* Admin Panels (Single route routing using tab state for clean visual boundaries) */}
-        <Route 
-          path="/admin" 
+        <Route
+          path="/admin"
           element={
             !user ? (
               <Navigate to="/login" replace />
@@ -233,7 +233,7 @@ export default function App() {
                 {adminTab === 'reports' && <AdminReports />}
               </AdminLayout>
             )
-          } 
+          }
         />
 
         {/* Fallback routing */}
