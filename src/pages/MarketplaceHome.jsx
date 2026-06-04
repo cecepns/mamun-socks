@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, Search, User, MapPin, Calendar, Clock, ShoppingBag, LogOut, ChevronRight, Package, MessageSquare, Phone, Mail } from 'lucide-react';
+import { Search, User, MapPin, Calendar, Clock, ShoppingBag, LogOut, ChevronRight, Package, MessageSquare, Phone, Mail } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { request } from '../utils/request';
 import { API_ENDPOINTS } from '../utils/endpoints';
 import HeroImage from '../assets/HeroImage.png';
+import { Header } from '../components/Header';
 
 export const MarketplaceHome = ({ user, onLogout, cart }) => {
   const navigate = useNavigate();
@@ -56,95 +57,8 @@ export const MarketplaceHome = ({ user, onLogout, cart }) => {
 
   return (
     <div className="min-h-screen bg-stone-50/40 flex flex-col pb-20 text-neutral-900 selection:bg-neutral-950 selection:text-white">
-      
-      {/* Top Navbar */}
-      <header className="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-neutral-100/80 transition-all">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          
-          {/* Logo & Brand */}
-          <Link to="/" className="flex items-center gap-3">
-            <img src="/logo.png" alt="Mamun Socks Logo" className="h-9 w-9 rounded-lg border border-neutral-100 bg-stone-50 p-0.5 object-cover" />
-            <div>
-              <h1 className="text-base font-extrabold tracking-widest text-neutral-950 uppercase">MAMUN SOCKS</h1>
-              <div className="flex items-center gap-1 text-[9px] text-neutral-400 font-semibold tracking-wider">
-                <MapPin size={9} className="text-neutral-400" /> KAB. BANDUNG
-              </div>
-            </div>
-          </Link>
-
-          {/* Navigation Links */}
-          <div className="flex items-center gap-6">
-            <nav className="hidden md:flex items-center gap-6 border-r border-neutral-100 pr-6">
-              <Link to="/catalog" className="text-xs uppercase tracking-widest font-bold py-2 text-neutral-400 hover:text-neutral-950 transition-colors">
-                Katalog Toko
-              </Link>
-              {user && (
-                <Link to="/orders" className="text-xs uppercase tracking-widest font-bold py-2 text-neutral-400 hover:text-neutral-950 transition-colors">
-                  Pesanan Saya
-                </Link>
-              )}
-              <Link to="/contact" className="text-xs uppercase tracking-widest font-bold py-2 text-neutral-400 hover:text-neutral-950 transition-colors">
-                Hubungi Kami
-              </Link>
-            </nav>
-
-            {/* Shopping Cart Trigger (redirects to standalone Checkout Page) */}
-            <Link
-              to="/checkout"
-              className="relative p-2 text-neutral-700 hover:text-neutral-950 transition-colors flex items-center justify-center bg-stone-100/50 hover:bg-stone-100 rounded-full"
-              title="Keranjang Belanja"
-            >
-              <ShoppingCart size={17} />
-              {cart.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-neutral-950 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-pulse">
-                  {cart.reduce((sum, item) => sum + item.quantity, 0)}
-                </span>
-              )}
-            </Link>
-
-            {/* Auth status / CTA */}
-            {user ? (
-              <div className="flex items-center gap-3 pl-2 border-l border-neutral-100">
-                <div className="text-right hidden sm:block">
-                  <p className="text-xs font-bold text-neutral-800 truncate max-w-[120px]">{user.name}</p>
-                  <p className="text-[9px] text-neutral-400 uppercase tracking-widest font-bold">{user.role}</p>
-                </div>
-                <button
-                  onClick={onLogout}
-                  className="p-2 text-neutral-400 hover:text-red-650 bg-stone-100/50 hover:bg-red-50 rounded-full transition-all"
-                  title="Keluar"
-                >
-                  <LogOut size={15} />
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center pl-2 border-l border-neutral-100">
-                <Link
-                  to="/login"
-                  className="px-4 py-1.5 bg-neutral-950 hover:bg-neutral-800 text-white text-[11px] font-bold uppercase tracking-widest rounded-full transition-all shadow-sm"
-                >
-                  Masuk
-                </Link>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Small Navigation for Mobile */}
-        <div className="md:hidden flex border-t border-neutral-100/80 bg-stone-50/50 text-center text-[10px] font-bold uppercase tracking-widest">
-          <Link to="/catalog" className="flex-1 py-3 text-neutral-400 hover:text-neutral-950">
-            Katalog
-          </Link>
-          {user && (
-            <Link to="/orders" className="flex-1 py-3 text-neutral-400 hover:text-neutral-950">
-              Pesanan
-            </Link>
-          )}
-          <Link to="/contact" className="flex-1 py-3 text-neutral-400 hover:text-neutral-950">
-            Kontak
-          </Link>
-        </div>
-      </header>
+      {/* Reusable Header */}
+      <Header user={user} onLogout={onLogout} cart={cart} />
 
       {/* Main Content Area */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex-1 mt-6 w-full space-y-16">

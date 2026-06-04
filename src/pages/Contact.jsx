@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { MapPin, Mail, Phone, ArrowLeft, MessageSquare } from 'lucide-react';
 import { request } from '../utils/request';
 import { API_ENDPOINTS } from '../utils/endpoints';
+import { Header } from '../components/Header';
 
-export const Contact = () => {
+export const Contact = ({ user, cart, onLogout }) => {
+  const navigate = useNavigate();
   const [settings, setSettings] = useState({
     contact_address: 'Sukawangi kaler no 126 jelegong kutawaringin kabupaten bandung',
     contact_email: '',
@@ -34,28 +36,26 @@ export const Contact = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 pb-20 selection:bg-slate-900 selection:text-white">
-      {/* Header */}
-      <header className="bg-white sticky top-0 z-50 border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="p-2 bg-slate-100 rounded-full group-hover:bg-slate-900 group-hover:text-white transition-all">
-              <ArrowLeft size={16} />
-            </div>
-            <span className="text-xs uppercase tracking-widest font-bold">Kembali</span>
-          </Link>
-          <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="Logo" className="h-9 w-9 rounded-lg border object-cover" />
-            <h1 className="text-sm font-black tracking-widest text-slate-950 uppercase">MAMUN SOCKS</h1>
-          </div>
-        </div>
-      </header>
+      {/* Reusable Header */}
+      <Header user={user} onLogout={onLogout} cart={cart} />
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 w-full">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 w-full space-y-6">
+        
+        {/* Back Button Inside Page Body Content */}
+        <button onClick={() => navigate(-1)} className="flex items-center gap-2 group self-start">
+          <div className="p-2 bg-white border border-slate-200 rounded-full group-hover:bg-slate-900 group-hover:text-white transition-all shadow-sm">
+            <ArrowLeft size={14} />
+          </div>
+          <span className="text-[10px] uppercase tracking-widest font-extrabold text-slate-500 group-hover:text-slate-950 transition-colors">
+            Kembali
+          </span>
+        </button>
+
         <div className="text-center space-y-3 mb-12">
           <span className="inline-block text-[9px] font-extrabold tracking-widest px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full uppercase">
             Hubungi Kami
-          </span >
+          </span>
           <h2 className="text-3xl font-black text-slate-900 uppercase tracking-wide">Hubungi & Kunjungi Toko</h2>
           <p className="text-xs text-slate-400 max-w-md mx-auto">Ada pertanyaan atau ingin membeli dalam jumlah partai besar? Hubungi tim kami melalui jalur kontak di bawah ini.</p>
         </div>

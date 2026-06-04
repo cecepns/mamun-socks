@@ -1,7 +1,5 @@
-const CACHE_NAME = 'mamun-socks-v2';
+const CACHE_NAME = 'mamun-socks-' + Date.now();
 const ASSETS = [
-  '/',
-  '/index.html',
   '/logo.png',
   '/manifest.json'
 ];
@@ -19,7 +17,7 @@ self.addEventListener('activate', (e) => {
     caches.keys().then((keys) => {
       return Promise.all(
         keys.map((key) => {
-          if (key !== CACHE_NAME) {
+          if (!key.startsWith('mamun-socks-') || key !== CACHE_NAME) {
             return caches.delete(key);
           }
         })
@@ -33,6 +31,14 @@ self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET' || e.request.url.includes('/api/')) {
     return;
   }
+
+  // Bypass cache completely for HTML pages (accept: text/html) so Vercel redeployment is reflected instantly
+  const isHtml = e.request.headers.get('Accept')?.includes('text/html') || e.request.url.endsWith('/') || e.request.url.endsWith('.html');
+  if (isHtml) {
+    e.respondWith(fetch(e.request));
+    return;
+  }
+
   e.respondWith(
     fetch(e.request)
       .then((networkResponse) => {

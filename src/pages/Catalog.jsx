@@ -4,8 +4,9 @@ import { Search, ChevronLeft, ChevronRight, ShoppingBag, MapPin, ArrowLeft } fro
 import toast from 'react-hot-toast';
 import { request } from '../utils/request';
 import { API_ENDPOINTS } from '../utils/endpoints';
+import { Header } from '../components/Header';
 
-export const Catalog = () => {
+export const Catalog = ({ user, cart, onLogout }) => {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -48,29 +49,22 @@ export const Catalog = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 pb-20 selection:bg-slate-900 selection:text-white">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="p-2 bg-slate-100 rounded-full group-hover:bg-slate-900 group-hover:text-white transition-all">
-              <ArrowLeft size={16} />
-            </div>
-            <span className="text-xs uppercase tracking-widest font-bold">Kembali ke Beranda</span>
-          </Link>
-          <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="Mamun Socks Logo" className="h-9 w-9 rounded-lg border object-cover" />
-            <div>
-              <h1 className="text-sm font-black tracking-widest text-slate-950 uppercase">MAMUN SOCKS</h1>
-              <div className="flex items-center gap-1 text-[9px] text-slate-400 font-semibold tracking-wider">
-                <MapPin size={9} /> KAB. BANDUNG
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* Reusable Header */}
+      <Header user={user} onLogout={onLogout} cart={cart} />
 
       {/* Main Container */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 w-full">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 w-full space-y-6">
+        
+        {/* Back Button Inside Page Body Content */}
+        <button onClick={() => navigate(-1)} className="flex items-center gap-2 group self-start">
+          <div className="p-2 bg-white border border-slate-200 rounded-full group-hover:bg-slate-900 group-hover:text-white transition-all shadow-sm">
+            <ArrowLeft size={14} />
+          </div>
+          <span className="text-[10px] uppercase tracking-widest font-extrabold text-slate-500 group-hover:text-slate-950 transition-colors">
+            Kembali
+          </span>
+        </button>
+
         <div className="space-y-8">
           {/* Page Title & Search */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-6">
@@ -182,7 +176,7 @@ export const Catalog = () => {
                 <button
                   key={i}
                   onClick={() => setPage(i + 1)}
-                  className={`w-9 h-9 text-[10px] font-bold rounded-full transition-all border ${page === i + 1 ? 'bg-slate-950 border-slate-950 text-white' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-950'}`}
+                  className={`w-9 h-9 text-[10px] font-bold rounded-full transition-all border ${page === i + 1 ? 'bg-neutral-950 border-neutral-950 text-white' : 'bg-white border-neutral-200 text-slate-600 hover:border-neutral-950'}`}
                 >
                   {i + 1}
                 </button>

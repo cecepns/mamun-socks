@@ -4,8 +4,9 @@ import { ClipboardList, ArrowLeft, MapPin, ChevronLeft, ChevronRight, Package, T
 import toast from 'react-hot-toast';
 import { request } from '../utils/request';
 import { API_ENDPOINTS } from '../utils/endpoints';
+import { Header } from '../components/Header';
 
-export const Orders = ({ user }) => {
+export const Orders = ({ user, cart, onLogout }) => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -44,24 +45,22 @@ export const Orders = ({ user }) => {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 pb-20 selection:bg-slate-900 selection:text-white">
-      {/* Header */}
-      <header className="bg-white sticky top-0 z-50 border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="p-2 bg-slate-100 rounded-full group-hover:bg-slate-900 group-hover:text-white transition-all">
-              <ArrowLeft size={16} />
-            </div>
-            <span className="text-xs uppercase tracking-widest font-bold">Kembali ke Toko</span>
-          </Link>
-          <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="Logo" className="h-9 w-9 rounded-lg border object-cover" />
-            <h1 className="text-sm font-black tracking-widest text-slate-950 uppercase">MAMUN SOCKS</h1>
-          </div>
-        </div>
-      </header>
+      {/* Reusable Header */}
+      <Header user={user} onLogout={onLogout} cart={cart} />
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 w-full">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 w-full space-y-6">
+        
+        {/* Back Button Inside Page Body Content */}
+        <Link to="/" className="flex items-center gap-2 group self-start">
+          <div className="p-2 bg-white border border-slate-200 rounded-full group-hover:bg-slate-900 group-hover:text-white transition-all shadow-sm">
+            <ArrowLeft size={14} />
+          </div>
+          <span className="text-[10px] uppercase tracking-widest font-extrabold text-slate-500 group-hover:text-slate-955 transition-colors">
+            Kembali ke Beranda
+          </span>
+        </Link>
+
         <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-100 shadow-xl shadow-slate-100/35">
           <h2 className="text-sm font-black uppercase tracking-wider text-slate-800 flex items-center gap-2.5 border-b border-slate-100 pb-4 mb-6">
             <ClipboardList size={18} className="text-slate-900" /> Histori Pesanan Saya
@@ -89,7 +88,7 @@ export const Orders = ({ user }) => {
                   pending: { text: 'Menunggu Konfirmasi', class: 'bg-amber-50 text-amber-800 border-amber-100/70' },
                   processing: { text: 'Diproses', class: 'bg-blue-50 text-blue-800 border-blue-100/70' },
                   completed: { text: 'Selesai', class: 'bg-emerald-50 text-emerald-800 border-emerald-100/70' },
-                  cancelled: { text: 'Dibatalkan', class: 'bg-red-50 text-red-800 border-red-100/70' }
+                  cancelled: { text: 'Dibatalkan', class: 'bg-red-50 text-red-805 border-red-100/70' }
                 };
 
                 const status = statusLabels[order.status] || { text: order.status, class: 'bg-slate-100 text-slate-700' };
@@ -206,7 +205,7 @@ export const Orders = ({ user }) => {
               <button
                 disabled={page <= 1}
                 onClick={() => setPage(page - 1)}
-                className="p-2 border border-slate-200 bg-white hover:bg-slate-950 hover:text-white rounded-full transition-colors disabled:opacity-30 flex items-center justify-center"
+                className="p-2 border border-slate-200 bg-white hover:bg-slate-50 rounded-full transition-colors disabled:opacity-30 flex items-center justify-center"
               >
                 <ChevronLeft size={14} />
               </button>
@@ -222,7 +221,7 @@ export const Orders = ({ user }) => {
               <button
                 disabled={page >= totalPages}
                 onClick={() => setPage(page + 1)}
-                className="p-2 border border-slate-200 bg-white hover:bg-slate-950 hover:text-white rounded-full transition-colors disabled:opacity-30 flex items-center justify-center"
+                className="p-2 border border-slate-200 bg-white hover:bg-slate-50 rounded-full transition-colors disabled:opacity-30 flex items-center justify-center"
               >
                 <ChevronRight size={14} />
               </button>

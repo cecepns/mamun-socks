@@ -4,8 +4,9 @@ import { ShoppingCart, ShoppingBag, ArrowLeft, Play, MapPin, Check } from 'lucid
 import toast from 'react-hot-toast';
 import { request } from '../utils/request';
 import { API_ENDPOINTS } from '../utils/endpoints';
+import { Header } from '../components/Header';
 
-export const ProductDetail = ({ user, onAddToCart }) => {
+export const ProductDetail = ({ user, onAddToCart, cart, onLogout }) => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
@@ -138,28 +139,20 @@ export const ProductDetail = ({ user, onAddToCart }) => {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 pb-20 selection:bg-slate-900 selection:text-white">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <button onClick={() => navigate(-1)} className="flex items-center gap-2.5 group">
-            <div className="p-2 bg-slate-100 rounded-full group-hover:bg-slate-900 group-hover:text-white transition-all">
-              <ArrowLeft size={16} />
-            </div>
-            <span className="text-xs uppercase tracking-widest font-bold">Kembali</span>
-          </button>
-          <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="Mamun Socks Logo" className="h-9 w-9 rounded-lg border object-cover" />
-            <div>
-              <h1 className="text-sm font-black tracking-widest text-slate-950 uppercase">MAMUN SOCKS</h1>
-              <div className="flex items-center gap-1 text-[9px] text-slate-400 font-semibold tracking-wider">
-                <MapPin size={9} /> KAB. BANDUNG
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* Reusable Header */}
+      <Header user={user} onLogout={onLogout} cart={cart} />
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 w-full">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 w-full space-y-4">
+        {/* Back Button Inside Page Body Content */}
+        <button onClick={() => navigate(-1)} className="flex items-center gap-2 group self-start">
+          <div className="p-2 bg-white border border-slate-200 rounded-full group-hover:bg-slate-900 group-hover:text-white transition-all shadow-sm">
+            <ArrowLeft size={14} />
+          </div>
+          <span className="text-[10px] uppercase tracking-widest font-extrabold text-slate-500 group-hover:text-slate-950 transition-colors">
+            Kembali ke Halaman Sebelumnya
+          </span>
+        </button>
+
         <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-100 shadow-xl shadow-slate-100/40">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 sm:gap-12">
             

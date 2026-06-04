@@ -13,7 +13,22 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
-      .then(reg => console.log('Service Worker registered!', reg.scope))
+      .then(reg => {
+        console.log('Service Worker registered!', reg.scope);
+        // Check for service worker updates
+        reg.onupdatefound = () => {
+          const installingWorker = reg.installing;
+          if (installingWorker) {
+            installingWorker.onstatechange = () => {
+              if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                // New update available, notify and reload
+                console.log('New update found! Refreshing...');
+                window.location.reload();
+              }
+            };
+          }
+        };
+      })
       .catch(err => console.log('Service Worker registration failed: ', err));
   });
 }
