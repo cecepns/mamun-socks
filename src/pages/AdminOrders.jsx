@@ -234,7 +234,7 @@ export const AdminOrders = () => {
           <div className="space-y-6 text-xs">
             
             {/* Split Info Panel */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 border border-slate-100 rounded-2xl">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 p-4 border border-slate-100 rounded-2xl">
               <div>
                 <p className="text-[10px] font-bold text-slate-400 uppercase">Informasi Pembeli</p>
                 <p className="text-slate-800 font-semibold mt-1 text-sm">{selectedOrder.customer_name}</p>
@@ -245,12 +245,45 @@ export const AdminOrders = () => {
               </div>
 
               <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase">Alamat & Catatan Kirim</p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase">Alamat & Pengiriman</p>
                 <p className="text-slate-700 mt-1 font-medium">{selectedOrder.shipping_address}</p>
-                {selectedOrder.notes && (
-                  <div className="mt-2 text-slate-500 bg-white p-2 border border-slate-100 rounded-lg">
-                    <span className="font-semibold text-slate-600">Catatan:</span> {selectedOrder.notes}
+                {selectedOrder.shipping_courier && (
+                  <div className="mt-2 text-[10px] bg-white p-2 border border-slate-100 rounded-lg space-y-1">
+                    <p className="font-semibold text-slate-800 uppercase tracking-wider">Ekspedisi</p>
+                    <p className="text-slate-600 font-bold">{selectedOrder.shipping_courier}</p>
+                    <p className="text-slate-500">{selectedOrder.shipping_service} ({selectedOrder.shipping_etd})</p>
                   </div>
+                )}
+                {selectedOrder.notes && (
+                  <div className="mt-2 text-slate-550 bg-white p-2 border border-slate-100 rounded-lg">
+                    <span className="font-semibold text-slate-655">Catatan:</span> {selectedOrder.notes}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase">Pembayaran & Bukti Transfer</p>
+                <p className="text-slate-800 font-bold mt-1">{selectedOrder.payment_method_name || 'Transfer Manual'}</p>
+                {selectedOrder.payment_receipt ? (
+                  <div className="mt-2 space-y-2">
+                    <div className="w-24 h-28 bg-white border border-slate-200 rounded-lg overflow-hidden p-0.5 shadow-sm">
+                      <img
+                        src={`https://api.kingcreativestudio.my.id/mamun-socks${selectedOrder.payment_receipt}`}
+                        alt="Bukti Transfer"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <a
+                      href={`https://api.kingcreativestudio.my.id/mamun-socks${selectedOrder.payment_receipt}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 text-[9px] text-emerald-600 font-bold hover:underline uppercase tracking-wider"
+                    >
+                      Buka Gambar Penuh
+                    </a>
+                  </div>
+                ) : (
+                  <p className="text-slate-400 mt-2 font-medium italic">Bukti transfer belum diunggah</p>
                 )}
               </div>
             </div>
@@ -275,7 +308,7 @@ export const AdminOrders = () => {
                         <td className="p-3 font-semibold text-slate-800">{item.product_name}</td>
                         <td className="p-3 capitalize">{item.model} - {item.color}</td>
                         <td className="p-3 text-right">Rp {parseFloat(item.price).toLocaleString('id-ID')}</td>
-                        <td className="p-3 text-center font-semibold">{item.quantity} pcs</td>
+                        <td className="p-3 text-center font-semibold">{item.quantity} pasang</td>
                         <td className="p-3 text-right font-semibold text-slate-800">
                           Rp {(parseFloat(item.price) * item.quantity).toLocaleString('id-ID')}
                         </td>
@@ -285,11 +318,21 @@ export const AdminOrders = () => {
                 </table>
               </div>
 
-              <div className="flex justify-end mt-4 p-3 bg-emerald-50 border border-emerald-100/50 rounded-xl">
-                <span className="font-semibold text-slate-700 mr-4">Total Amount:</span>
-                <span className="font-bold text-emerald-700 text-sm">
-                  Rp {parseFloat(selectedOrder.total_amount).toLocaleString('id-ID')}
-                </span>
+              <div className="flex flex-col items-end gap-1.5 mt-4 p-4 bg-emerald-50/50 border border-emerald-100/50 rounded-xl text-xs font-semibold">
+                <div className="flex justify-between w-64 text-slate-600">
+                  <span>Subtotal Belanja:</span>
+                  <span>Rp {(parseFloat(selectedOrder.total_amount) - parseFloat(selectedOrder.shipping_cost || 0)).toLocaleString('id-ID')}</span>
+                </div>
+                {selectedOrder.shipping_cost > 0 && (
+                  <div className="flex justify-between w-64 text-slate-600">
+                    <span>Ongkos Kirim:</span>
+                    <span>Rp {parseFloat(selectedOrder.shipping_cost).toLocaleString('id-ID')}</span>
+                  </div>
+                )}
+                <div className="flex justify-between w-64 border-t border-emerald-200/50 pt-2 font-bold text-slate-900 text-sm">
+                  <span className="text-emerald-700">Total Pembayaran:</span>
+                  <span className="text-emerald-700">Rp {parseFloat(selectedOrder.total_amount).toLocaleString('id-ID')}</span>
+                </div>
               </div>
             </div>
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { LayoutDashboard, ShoppingBag, ClipboardList, Users, ArrowUpDown, BarChart3, LogOut, Shield, Menu, X } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, ClipboardList, Users, ArrowUpDown, BarChart3, LogOut, Shield, Menu, X, CreditCard } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import { request } from './utils/request';
@@ -10,6 +10,11 @@ import { API_ENDPOINTS } from './utils/endpoints';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { MarketplaceHome } from './pages/MarketplaceHome';
+import { Catalog } from './pages/Catalog';
+import { ProductDetail } from './pages/ProductDetail';
+import { Checkout } from './pages/Checkout';
+import { Contact } from './pages/Contact';
+import { Orders } from './pages/Orders';
 
 import { AdminDashboard } from './pages/AdminDashboard';
 import { AdminProducts } from './pages/AdminProducts';
@@ -17,6 +22,7 @@ import { AdminOrders } from './pages/AdminOrders';
 import { AdminUsers } from './pages/AdminUsers';
 import { AdminStockLogs } from './pages/AdminStockLogs';
 import { AdminReports } from './pages/AdminReports';
+import { AdminPaymentMethods } from './pages/AdminPaymentMethods';
 
 // ==========================================
 // ADMIN LAYOUT SIDEBAR CONTAINER
@@ -31,6 +37,7 @@ const AdminLayout = ({ user, onLogout, children, activeTab, setActiveTab }) => {
     { id: 'products', label: 'Produk Kaos Kaki', icon: ShoppingBag },
     { id: 'stock', label: 'Stok & Opname', icon: ArrowUpDown },
     { id: 'users', label: 'Manajemen User', icon: Users },
+    { id: 'payments', label: 'Metode Pembayaran', icon: CreditCard },
     { id: 'reports', label: 'Laporan Penjualan', icon: BarChart3 },
   ];
 
@@ -51,11 +58,19 @@ const AdminLayout = ({ user, onLogout, children, activeTab, setActiveTab }) => {
         </button>
       </div>
 
+      {/* Backdrop overlay for mobile menu */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-30 md:hidden transition-opacity"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar Panel */}
-      <aside className={`fixed md:sticky top-0 left-0 bottom-0 z-40 w-64 bg-slate-900 text-white flex flex-col transition-transform duration-300 transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-0 md:translate-x-0'} md:block shadow-2xl`}>
+      <aside className={`fixed md:sticky top-0 left-0 bottom-0 z-40 w-64 bg-slate-900 text-white flex flex-col transition-transform duration-300 transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} md:flex shadow-2xl`}>
         {/* Sidebar Header */}
         <div className="p-6 border-b border-slate-800 flex items-center gap-3">
-          <img src="/logo.png" alt="Mamun Socks" className="w-10 h-10 rounded-xl bg-white p-0.5 animate-float" />
+          <img src="/logo.png" alt="Mamun Socks" className="w-10 h-10 rounded-xl bg-white p-0.5" />
           <div>
             <h1 className="text-base font-bold text-white tracking-tight">Mamun Socks</h1>
             <span className="text-[10px] text-emerald-400 font-semibold tracking-wider flex items-center gap-1">
@@ -133,6 +148,51 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [adminTab, setAdminTab] = useState('dashboard');
 
+  // Shared Cart State Hoisted from MarketplaceHome
+  const [cart, setCart] = useState(() => {
+    try {
+      const savedCart = localStorage.getItem('mamun_socks_cart');
+      return savedCart ? JSON.parse(savedCart) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('mamun_socks_cart', JSON.stringify(cart));
+  }, [cart]);
+
+  const handleAddToCart = (item) => {
+    setCart(prevCart => {
+      const existingIdx = prevCart.findIndex(i => i.variant_id === item.variant_id);
+      if (existingIdx > -1) {
+        const newCart = [...prevCart];
+        const newQty = newCart[existingIdx].quantity + item.quantity;
+        newCart[existingIdx].quantity = Math.min(newQty, item.stock);
+        return newCart;
+      }
+      return [...prevCart, item];
+    });
+  };
+
+  const handleUpdateCartQty = (variantId, newQty) => {
+    setCart(prevCart => prevCart.map(item => {
+      if (item.variant_id === variantId) {
+        return { ...item, quantity: Math.min(newQty, item.stock) };
+      }
+      return item;
+    }));
+  };
+
+  const handleRemoveFromCart = (variantId) => {
+    setCart(prevCart => prevCart.filter(item => item.variant_id !== variantId));
+    toast.success('Item dihapus dari keranjang.');
+  };
+
+  const handleClearCart = () => {
+    setCart([]);
+  };
+
   const checkAuth = async () => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -178,9 +238,9 @@ export default function App() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
         <div className="flex flex-col items-center gap-4">
-          <img src="/logo.png" alt="Logo" className="w-16 h-16 rounded-2xl" />
+          <img src="/logo.png" alt="Logo" className="w-16 h-16 rounded-2xl animate-pulse" />
           <div className="h-1.5 w-32 bg-slate-800 rounded-full overflow-hidden">
-            <div className="h-full bg-emerald-500 w-1/2 rounded-full animate-pulse" />
+            <div className="h-full bg-emerald-500 w-1/2 rounded-full" />
           </div>
           <span className="text-xs text-slate-400 font-semibold tracking-wider uppercase">Loading Profile...</span>
         </div>
@@ -203,19 +263,60 @@ export default function App() {
           element={user ? <Navigate to="/" replace /> : <Register />}
         />
 
-        {/* Customer Route */}
+        {/* Customer Routes */}
         <Route
           path="/"
           element={
             user && user.role === 'admin' ? (
               <Navigate to="/admin" replace />
             ) : (
-              <MarketplaceHome user={user} onLogout={handleLogout} />
+              <MarketplaceHome 
+                user={user} 
+                onLogout={handleLogout} 
+                cart={cart}
+                onUpdateQuantity={handleUpdateCartQty}
+                onRemoveFromCart={handleRemoveFromCart}
+                onClearCart={handleClearCart}
+              />
             )
           }
         />
 
-        {/* Admin Panels (Single route routing using tab state for clean visual boundaries) */}
+        <Route
+          path="/catalog"
+          element={<Catalog />}
+        />
+
+        <Route
+          path="/product/:id"
+          element={<ProductDetail user={user} onAddToCart={handleAddToCart} />}
+        />
+
+        <Route
+          path="/checkout"
+          element={
+            <Checkout 
+              user={user} 
+              cartItems={cart} 
+              onUpdateQuantity={handleUpdateCartQty} 
+              onRemoveFromCart={handleRemoveFromCart} 
+              onClearCart={handleClearCart} 
+              onOrderSuccess={checkAuth} 
+            />
+          }
+        />
+
+        <Route
+          path="/contact"
+          element={<Contact />}
+        />
+
+        <Route
+          path="/orders"
+          element={<Orders user={user} />}
+        />
+
+        {/* Admin Panels */}
         <Route
           path="/admin"
           element={
@@ -230,6 +331,7 @@ export default function App() {
                 {adminTab === 'products' && <AdminProducts />}
                 {adminTab === 'stock' && <AdminStockLogs />}
                 {adminTab === 'users' && <AdminUsers currentUser={user} />}
+                {adminTab === 'payments' && <AdminPaymentMethods />}
                 {adminTab === 'reports' && <AdminReports />}
               </AdminLayout>
             )

@@ -20,6 +20,7 @@ export const API_ENDPOINTS = {
     LIST: "/orders",
     CREATE: "/orders",
     STATUS: (id) => `/orders/${id}/status`,
+    UPLOAD_RECEIPT: "/orders/upload-receipt",
   },
   STOCK: {
     LOGS: "/stock/logs",
@@ -37,6 +38,17 @@ export const API_ENDPOINTS = {
     PROVINCES: "/regions/provinces",
     REGENCIES: (provCode) => `/regions/regencies/${provCode}`,
     DISTRICTS: (regencyCode) => `/regions/districts/${regencyCode}`,
+  },
+  SHIPPING: {
+    DESTINATION: "/shipping/destination",
+    COST: "/shipping/cost",
+  },
+  PAYMENT_METHODS: {
+    LIST: "/payment-methods",
+    ADMIN_LIST: "/admin/payment-methods",
+    CREATE: "/admin/payment-methods",
+    UPDATE: (id) => `/admin/payment-methods/${id}`,
+    DELETE: (id) => `/admin/payment-methods/${id}`,
   },
   UPLOAD: "/upload",
 };

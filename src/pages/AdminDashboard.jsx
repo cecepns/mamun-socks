@@ -8,6 +8,9 @@ export const AdminDashboard = ({ navigateToTab }) => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [whatsappNumber, setWhatsappNumber] = useState('');
+  const [contactAddress, setContactAddress] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
+  const [contactPhone, setContactPhone] = useState('');
   const [savingSettings, setSavingSettings] = useState(false);
 
   const fetchStatsAndSettings = async () => {
@@ -21,8 +24,11 @@ export const AdminDashboard = ({ navigateToTab }) => {
       if (statsRes.success) {
         setStats(statsRes.data);
       }
-      if (settingsRes.success && settingsRes.data.whatsapp_number) {
-        setWhatsappNumber(settingsRes.data.whatsapp_number);
+      if (settingsRes.success) {
+        if (settingsRes.data.whatsapp_number) setWhatsappNumber(settingsRes.data.whatsapp_number);
+        if (settingsRes.data.contact_address) setContactAddress(settingsRes.data.contact_address);
+        if (settingsRes.data.contact_email) setContactEmail(settingsRes.data.contact_email);
+        if (settingsRes.data.contact_phone) setContactPhone(settingsRes.data.contact_phone);
       }
     } catch (error) {
       toast.error('Gagal mengambil data dashboard.');
@@ -41,10 +47,13 @@ export const AdminDashboard = ({ navigateToTab }) => {
     setSavingSettings(true);
     try {
       const res = await request.put(API_ENDPOINTS.SETTINGS.UPDATE, {
-        whatsapp_number: whatsappNumber.trim()
+        whatsapp_number: whatsappNumber.trim(),
+        contact_address: contactAddress.trim(),
+        contact_email: contactEmail.trim(),
+        contact_phone: contactPhone.trim()
       });
       if (res.success) {
-        toast.success('Nomor WhatsApp berhasil disimpan.');
+        toast.success('Pengaturan toko berhasil disimpan.');
       }
     } catch (err) {
       toast.error(err.message || 'Gagal menyimpan pengaturan.');
@@ -217,14 +226,17 @@ export const AdminDashboard = ({ navigateToTab }) => {
       </div>
 
       {/* Settings Panel */}
-      <div className="max-w-md bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
-        <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
-          <svg className="w-5 h-5 text-emerald-600 fill-current" viewBox="0 0 24 24">
-            <path d="M12.012 2c-5.506 0-9.988 4.47-9.988 9.972 0 1.764.462 3.42 1.265 4.876l-1.291 4.722 4.846-1.268a9.92 9.92 0 0 0 4.168.938h.004c5.506 0 9.988-4.47 9.988-9.972C22 6.47 17.518 2 12.012 2zm0 18.286c-1.579 0-3.13-.42-4.492-1.22l-.322-.192-2.858.748.765-2.784-.212-.336a8.212 8.212 0 0 1-1.263-4.398c0-4.542 3.704-8.238 8.263-8.238 4.558 0 8.262 3.696 8.262 8.242 0 4.542-3.704 8.238-8.263 8.238zm4.536-6.19c-.248-.124-1.47-.723-1.696-.807-.226-.083-.39-.124-.554.124-.164.248-.633.807-.775.972-.142.164-.284.185-.532.062-.248-.124-1.047-.385-1.996-1.23-.738-.657-1.236-1.47-1.38-1.72-.144-.247-.015-.38.11-.502.112-.11.248-.288.372-.433.124-.144.165-.247.248-.412.083-.165.04-.31-.02-.433-.06-.124-.554-1.336-.76-1.83-.2-.486-.4-.42-.553-.42-.143-.004-.308-.004-.473-.004a.91.91 0 0 0-.66.31c-.226.247-.864.845-.864 2.06 0 1.217.886 2.392.99 2.557.123.164 1.742 2.66 4.22 3.727.59.254 1.05.406 1.41.52.593.189 1.133.162 1.56.098.476-.072 1.47-.6 1.676-1.176.206-.577.206-1.072.144-1.176-.062-.104-.227-.164-.474-.288z" />
-          </svg>
-          Pengaturan WhatsApp Toko
-        </h3>
-        <form onSubmit={handleSaveSettings} className="space-y-3">
+      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-100 shadow-sm space-y-6">
+        <div>
+          <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2 border-b pb-3 border-slate-100">
+            <svg className="w-5 h-5 text-emerald-600 fill-current" viewBox="0 0 24 24">
+              <path d="M12.012 2c-5.506 0-9.988 4.47-9.988 9.972 0 1.764.462 3.42 1.265 4.876l-1.291 4.722 4.846-1.268a9.92 9.92 0 0 0 4.168.938h.004c5.506 0 9.988-4.47 9.988-9.972C22 6.47 17.518 2 12.012 2zm0 18.286c-1.579 0-3.13-.42-4.492-1.22l-.322-.192-2.858.748.765-2.784-.212-.336a8.212 8.212 0 0 1-1.263-4.398c0-4.542 3.704-8.238 8.263-8.238 4.558 0 8.262 3.696 8.262 8.242 0 4.542-3.704 8.238-8.263 8.238zm4.536-6.19c-.248-.124-1.47-.723-1.696-.807-.226-.083-.39-.124-.554.124-.164.248-.633.807-.775.972-.142.164-.284.185-.532.062-.248-.124-1.047-.385-1.996-1.23-.738-.657-1.236-1.47-1.38-1.72-.144-.247-.015-.38.11-.502.112-.11.248-.288.372-.433.124-.144.165-.247.248-.412.083-.165.04-.31-.02-.433-.06-.124-.554-1.336-.76-1.83-.2-.486-.4-.42-.553-.42-.143-.004-.308-.004-.473-.004a.91.91 0 0 0-.66.31c-.226.247-.864.845-.864 2.06 0 1.217.886 2.392.99 2.557.123.164 1.742 2.66 4.22 3.727.59.254 1.05.406 1.41.52.593.189 1.133.162 1.56.098.476-.072 1.47-.6 1.676-1.176.206-.577.206-1.072.144-1.176-.062-.104-.227-.164-.474-.288z" />
+            </svg>
+            Pengaturan Toko & Informasi Kontak
+          </h3>
+          <p className="text-[10px] text-slate-400 font-medium mt-1">Pengaturan ini akan ditampilkan di halaman hubungi kami dan tombol WhatsApp customer.</p>
+        </div>
+        <form onSubmit={handleSaveSettings} className="space-y-4 max-w-lg">
           <div>
             <label className="block text-xs font-semibold text-slate-500 mb-1">Nomor WhatsApp Penerima</label>
             <input 
@@ -232,20 +244,51 @@ export const AdminDashboard = ({ navigateToTab }) => {
               placeholder="Contoh: 6281234567890"
               value={whatsappNumber}
               onChange={(e) => setWhatsappNumber(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all font-semibold"
             />
-            <p className="text-[10px] text-slate-400 mt-1">Masukkan kode negara di awal (contoh: 62 untuk Indonesia) tanpa spasi atau tanda +.</p>
+            <p className="text-[9px] text-slate-400 mt-1">Gunakan kode negara (contoh: 62 untuk Indonesia) tanpa spasi atau tanda +.</p>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-500 mb-1">Alamat Toko</label>
+            <textarea 
+              rows="2"
+              placeholder="Alamat fisik toko"
+              value={contactAddress}
+              onChange={(e) => setContactAddress(e.target.value)}
+              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all font-medium"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 mb-1">Email Toko</label>
+              <input 
+                type="email"
+                placeholder="Contoh: sales@mamunsocks.com"
+                value={contactEmail}
+                onChange={(e) => setContactEmail(e.target.value)}
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all font-medium"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 mb-1">Nomor Telepon Toko</label>
+              <input 
+                type="text"
+                placeholder="Contoh: 022-1234567"
+                value={contactPhone}
+                onChange={(e) => setContactPhone(e.target.value)}
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all font-medium"
+              />
+            </div>
           </div>
           <button
             type="submit"
             disabled={savingSettings}
             className="w-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold py-2.5 px-4 rounded-xl flex items-center justify-center transition-all disabled:opacity-50"
           >
-            {savingSettings ? 'Menyimpan...' : 'Simpan Nomor'}
+            {savingSettings ? 'Menyimpan...' : 'Simpan Pengaturan'}
           </button>
         </form>
       </div>
-
     </div>
   );
 };
