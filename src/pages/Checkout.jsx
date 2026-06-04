@@ -476,21 +476,6 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
                       placeholder="Contoh: Hubungi nomor sebelum mengirim."
                     />
                   </div>
-
-                  {/* Order Date Selector */}
-                  <div>
-                    <label className="block text-[9px] font-bold text-slate-750 uppercase tracking-widest mb-1.5">
-                      Tanggal Pemesanan
-                    </label>
-                    <input
-                      type="date"
-                      value={checkoutDate}
-                      onChange={(e) => setCheckoutDate(e.target.value)}
-                      className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all font-semibold"
-                      required
-                    />
-                    <p className="text-[9px] text-slate-650 mt-1 font-medium">Tanggal disinkronkan dengan database transaksi terakhir.</p>
-                  </div>
                 </div>
 
               </div>
