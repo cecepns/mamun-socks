@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { ClipboardList, ArrowLeft, MapPin, ChevronLeft, ChevronRight, Package, Truck, CreditCard, ExternalLink } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { request } from '../utils/request';
+import { getAssetURL } from '../utils/api';
 import { API_ENDPOINTS } from '../utils/endpoints';
 import { Header } from '../components/Header';
 
@@ -99,11 +100,11 @@ export const Orders = ({ user, cart, onLogout }) => {
                     {/* Header Order */}
                     <div className="bg-slate-50/50 px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 text-xs">
                       <div>
-                        <span className="text-slate-400 text-[10px] font-bold tracking-wider uppercase block">ID PESANAN</span>
+                        <span className="text-slate-700 text-[10px] font-bold tracking-wider uppercase block">ID PESANAN</span>
                         <p className="font-extrabold text-slate-900 tracking-wider mt-0.5">{order.order_number}</p>
                       </div>
                       <div>
-                        <span className="text-slate-400 text-[10px] font-bold tracking-wider uppercase block">TANGGAL TRANSAKSI</span>
+                        <span className="text-slate-700 text-[10px] font-bold tracking-wider uppercase block">TANGGAL TRANSAKSI</span>
                         <p className="font-semibold text-slate-700 mt-0.5">
                           {new Date(order.order_date).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}
                         </p>
@@ -119,9 +120,7 @@ export const Orders = ({ user, cart, onLogout }) => {
                     <div className="px-6 py-3 divide-y divide-slate-100/60">
                       {order.items?.map((item, idx) => {
                         const img = item.product_images?.[0] || '/logo.png';
-                        const imageSrc = img.startsWith('http') || img.startsWith('/uploads') 
-                          ? `https://api.kingcreativestudio.my.id/mamun-socks${img}` 
-                          : img;
+                        const imageSrc = getAssetURL(img);
                         
                         return (
                           <div key={idx} className="py-3 flex items-center justify-between gap-4">
@@ -133,7 +132,7 @@ export const Orders = ({ user, cart, onLogout }) => {
                               />
                               <div>
                                 <h5 className="text-xs font-bold text-slate-900 uppercase tracking-wider">{item.product_name}</h5>
-                                <p className="text-[10px] text-slate-400 capitalize font-medium mt-0.5">{item.model} - {item.color} x {item.quantity} pasang</p>
+                                <p className="text-[10px] text-slate-600 capitalize font-semibold mt-0.5">{item.model} - {item.color} x {item.quantity} pasang</p>
                               </div>
                             </div>
                             <span className="text-xs font-bold text-slate-900 tracking-wider">
@@ -147,26 +146,26 @@ export const Orders = ({ user, cart, onLogout }) => {
                     {/* Shipping & Payment summary */}
                     <div className="bg-slate-50/20 border-t border-slate-100 px-6 py-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-medium text-slate-600 border-b">
                       <div className="space-y-1">
-                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Alamat Pengiriman</span>
+                        <span className="text-[9px] font-bold text-slate-700 uppercase tracking-widest block">Alamat Pengiriman</span>
                         <p className="text-slate-800 font-semibold">{order.shipping_address}</p>
                       </div>
                       <div className="space-y-2">
                         {order.shipping_courier && (
                           <div className="flex items-center gap-1.5 text-xs text-slate-700">
-                            <Truck size={14} className="text-slate-400" />
+                            <Truck size={14} className="text-slate-600" />
                             <span>Kurir: <span className="font-bold text-slate-950">{order.shipping_courier}</span> ({order.shipping_service})</span>
                           </div>
                         )}
                         {order.payment_method_name && (
                           <div className="flex items-center gap-1.5 text-xs text-slate-700">
-                            <CreditCard size={14} className="text-slate-400" />
+                            <CreditCard size={14} className="text-slate-600" />
                             <span>Bayar: <span className="font-bold text-slate-950">{order.payment_method_name}</span></span>
                           </div>
                         )}
                         {order.payment_receipt && (
                           <div className="pt-0.5">
                             <a
-                              href={`https://api.kingcreativestudio.my.id/mamun-socks${order.payment_receipt}`}
+                              href={getAssetURL(order.payment_receipt)}
                               target="_blank"
                               rel="noreferrer"
                               className="inline-flex items-center gap-1 text-[10px] text-emerald-600 font-bold hover:underline"
@@ -182,11 +181,11 @@ export const Orders = ({ user, cart, onLogout }) => {
                     <div className="bg-slate-50/10 px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
                       <div>
                         {order.notes && (
-                          <p className="text-slate-500 font-medium">Catatan: "{order.notes}"</p>
+                          <p className="text-slate-800 font-semibold">Catatan: "{order.notes}"</p>
                         )}
                       </div>
                       <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
-                        <span className="text-slate-500 font-bold uppercase tracking-wider">Total Pembayaran:</span>
+                        <span className="text-slate-750 font-bold uppercase tracking-wider">Total Pembayaran:</span>
                         <span className="text-sm font-extrabold text-slate-950 tracking-wider">
                           Rp {parseFloat(order.total_amount).toLocaleString('id-ID')}
                         </span>

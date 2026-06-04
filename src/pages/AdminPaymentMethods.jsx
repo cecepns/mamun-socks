@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { CreditCard, Plus, Edit2, Trash2, ToggleLeft, ToggleRight, X, Upload, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { request } from '../utils/request';
+import { getAssetURL } from '../utils/api';
 import { API_ENDPOINTS } from '../utils/endpoints';
 import { Modal } from '../components/Modals';
 
@@ -251,7 +252,7 @@ export const AdminPaymentMethods = () => {
                   <div className="w-16 h-16 bg-slate-50 border rounded-xl p-1 flex items-center justify-center">
                     {method.qr_code_image ? (
                       <img
-                        src={method.qr_code_image.startsWith('/uploads') ? `https://api.kingcreativestudio.my.id/mamun-socks${method.qr_code_image}` : method.qr_code_image}
+                        src={getAssetURL(method.qr_code_image)}
                         alt="QRIS"
                         className="w-full h-full object-contain"
                       />
@@ -357,7 +358,7 @@ export const AdminPaymentMethods = () => {
               {formData.qr_code_image && (
                 <div className="flex justify-center p-2 bg-slate-50 rounded-2xl border">
                   <img
-                    src={formData.qr_code_image.startsWith('/uploads') ? `https://api.kingcreativestudio.my.id/mamun-socks${formData.qr_code_image}` : formData.qr_code_image}
+                    src={getAssetURL(formData.qr_code_image)}
                     alt="Preview QRIS"
                     className="w-32 h-32 object-contain"
                   />

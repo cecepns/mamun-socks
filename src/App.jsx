@@ -5,6 +5,7 @@ import { LayoutDashboard, ShoppingBag, ClipboardList, Users, ArrowUpDown, BarCha
 import toast from 'react-hot-toast';
 
 import { request } from './utils/request';
+import { api } from './utils/api';
 import { API_ENDPOINTS } from './utils/endpoints';
 
 import { Login } from './pages/Login';
@@ -202,16 +203,22 @@ export default function App() {
     }
 
     try {
-      const res = await request.get(API_ENDPOINTS.AUTH.PROFILE);
-      if (res.success) {
-        setUser(res.data);
+      const res = await api.get(API_ENDPOINTS.AUTH.PROFILE);
+      if (res.data && res.data.success) {
+        setUser(res.data.data);
       } else {
         localStorage.removeItem('token');
         setUser(null);
       }
     } catch (e) {
-      localStorage.removeItem('token');
-      setUser(null);
+      // Only remove token if it's explicitly an authentication failure (401 Unauthorized or 403 Forbidden)
+      if (e.response && (e.response.status === 401 || e.response.status === 403)) {
+        localStorage.removeItem('token');
+        setUser(null);
+      } else {
+        // Network offline, 500 server error, timeout, etc. - keep the token in localStorage
+        console.error("Authentication check failed due to server or network error:", e);
+      }
     } finally {
       setLoading(false);
     }
@@ -284,12 +291,12 @@ export default function App() {
 
         <Route
           path="/catalog"
-          element={<Catalog />}
+          element={<Catalog user={user} cart={cart} onLogout={handleLogout} />}
         />
 
         <Route
           path="/product/:id"
-          element={<ProductDetail user={user} onAddToCart={handleAddToCart} />}
+          element={<ProductDetail user={user} onAddToCart={handleAddToCart} cart={cart} onLogout={handleLogout} />}
         />
 
         <Route
@@ -302,18 +309,19 @@ export default function App() {
               onRemoveFromCart={handleRemoveFromCart} 
               onClearCart={handleClearCart} 
               onOrderSuccess={checkAuth} 
+              onLogout={handleLogout}
             />
           }
         />
 
         <Route
           path="/contact"
-          element={<Contact />}
+          element={<Contact user={user} cart={cart} onLogout={handleLogout} />}
         />
 
         <Route
           path="/orders"
-          element={<Orders user={user} />}
+          element={<Orders user={user} cart={cart} onLogout={handleLogout} />}
         />
 
         {/* Admin Panels */}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ShoppingCart, Film, Play, Image as ImageIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { getAssetURL } from '../utils/api';
 import { Modal } from '../components/Modals';
 
 export const ProductDetailModal = ({ isOpen, onClose, product, onAddToCart }) => {
@@ -74,7 +75,7 @@ export const ProductDetailModal = ({ isOpen, onClose, product, onAddToCart }) =>
             {activeMedia === 'image' ? (
               images.length > 0 ? (
                 <img
-                  src={images[activeImageIndex].startsWith('http') || images[activeImageIndex].startsWith('/uploads') ? `https://api.kingcreativestudio.my.id/mamun-socks${images[activeImageIndex]}` : images[activeImageIndex]}
+                  src={getAssetURL(images[activeImageIndex])}
                   alt={product.name}
                   className="w-full h-full object-cover"
                 />
@@ -84,7 +85,7 @@ export const ProductDetailModal = ({ isOpen, onClose, product, onAddToCart }) =>
             ) : (
               product.video && (
                 <video
-                  src={product.video.startsWith('http') || product.video.startsWith('/uploads') ? `https://api.kingcreativestudio.my.id/mamun-socks${product.video}` : product.video}
+                  src={getAssetURL(product.video)}
                   controls
                   autoPlay
                   className="w-full h-full object-contain"
@@ -102,7 +103,7 @@ export const ProductDetailModal = ({ isOpen, onClose, product, onAddToCart }) =>
                 className={`w-14 h-16 rounded-xl border overflow-hidden flex-shrink-0 transition-all ${activeMedia === 'image' && activeImageIndex === idx ? 'border-neutral-950 ring-1 ring-neutral-950 scale-95 shadow-sm' : 'border-neutral-200'}`}
               >
                 <img
-                  src={img.startsWith('http') || img.startsWith('/uploads') ? `https://api.kingcreativestudio.my.id/mamun-socks${img}` : img}
+                  src={getAssetURL(img)}
                   alt=""
                   className="w-full h-full object-cover"
                 />
@@ -135,8 +136,8 @@ export const ProductDetailModal = ({ isOpen, onClose, product, onAddToCart }) =>
             </div>
 
             <div>
-              <h4 className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1.5">Deskripsi</h4>
-              <p className="text-xs text-neutral-500 font-light leading-relaxed whitespace-pre-line">
+              <h4 className="text-[10px] font-extrabold text-neutral-700 uppercase tracking-widest mb-1.5">Deskripsi</h4>
+              <p className="text-xs text-neutral-800 font-medium leading-relaxed whitespace-pre-line">
                 {product.description || 'Koleksi kaos kaki berkualitas premium untuk kenyamanan beraktivitas sepanjang hari.'}
               </p>
             </div>
@@ -144,7 +145,7 @@ export const ProductDetailModal = ({ isOpen, onClose, product, onAddToCart }) =>
             {/* Variants Selection */}
             <div className="space-y-5">
               <div>
-                <label className="block text-[9px] font-extrabold text-neutral-450 uppercase tracking-widest mb-2.5">Model</label>
+                <label className="block text-[9px] font-extrabold text-neutral-700 uppercase tracking-widest mb-2.5">Model</label>
                 <div className="flex flex-wrap gap-2">
                   {models.map(model => (
                     <button
@@ -159,7 +160,7 @@ export const ProductDetailModal = ({ isOpen, onClose, product, onAddToCart }) =>
               </div>
 
               <div>
-                <label className="block text-[9px] font-extrabold text-neutral-450 uppercase tracking-widest mb-2.5">Warna</label>
+                <label className="block text-[9px] font-extrabold text-neutral-700 uppercase tracking-widest mb-2.5">Warna</label>
                 <div className="flex flex-wrap gap-2">
                   {colors.map(color => (
                     <button
@@ -177,7 +178,7 @@ export const ProductDetailModal = ({ isOpen, onClose, product, onAddToCart }) =>
             {/* Inventory Stock Indicator */}
             <div className="bg-stone-50 border border-neutral-100 p-4 rounded-2xl flex items-center justify-between mt-6">
               <div>
-                <span className="text-[9px] text-neutral-450 font-bold uppercase tracking-widest">Stok Tersedia</span>
+                <span className="text-[9px] text-neutral-700 font-bold uppercase tracking-widest">Stok Tersedia</span>
                 <p className={`text-sm font-extrabold mt-0.5 ${stockAvailable > 0 ? 'text-neutral-800' : 'text-red-500'}`}>
                   {stockAvailable > 0 ? `${stockAvailable} Pasang` : 'Stok Habis'}
                 </p>

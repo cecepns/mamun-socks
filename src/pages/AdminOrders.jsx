@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, Eye, ClipboardList, Clock, CheckCircle, XCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { request } from '../utils/request';
+import { getAssetURL } from '../utils/api';
 import { API_ENDPOINTS } from '../utils/endpoints';
 import { Modal } from '../components/Modals';
 
@@ -268,13 +269,13 @@ export const AdminOrders = () => {
                   <div className="mt-2 space-y-2">
                     <div className="w-24 h-28 bg-white border border-slate-200 rounded-lg overflow-hidden p-0.5 shadow-sm">
                       <img
-                        src={`https://api.kingcreativestudio.my.id/mamun-socks${selectedOrder.payment_receipt}`}
+                        src={getAssetURL(selectedOrder.payment_receipt)}
                         alt="Bukti Transfer"
                         className="w-full h-full object-cover"
                       />
                     </div>
                     <a
-                      href={`https://api.kingcreativestudio.my.id/mamun-socks${selectedOrder.payment_receipt}`}
+                      href={getAssetURL(selectedOrder.payment_receipt)}
                       target="_blank"
                       rel="noreferrer"
                       className="inline-flex items-center gap-1 text-[9px] text-emerald-600 font-bold hover:underline uppercase tracking-wider"

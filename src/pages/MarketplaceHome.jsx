@@ -3,6 +3,7 @@ import { Search, User, MapPin, Calendar, Clock, ShoppingBag, LogOut, ChevronRigh
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { request } from '../utils/request';
+import { getAssetURL } from '../utils/api';
 import { API_ENDPOINTS } from '../utils/endpoints';
 import HeroImage from '../assets/HeroImage.png';
 import { Header } from '../components/Header';
@@ -81,7 +82,7 @@ export const MarketplaceHome = ({ user, onLogout, cart }) => {
             <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight leading-[1.1] text-white">
               Comfort and Quality in Every Single Thread.
             </h2>
-            <p className="text-xs sm:text-sm text-white/90 font-light max-w-xl leading-relaxed">
+            <p className="text-xs sm:text-sm text-white font-normal max-w-xl leading-relaxed">
               Menghadirkan kaos kaki rajutan lokal dengan standar kualitas internasional. Menggunakan benang pilihan dan teknologi rajut terkini untuk sirkulasi udara optimal dan daya tahan maksimal.
             </p>
             <div className="flex flex-wrap gap-5 pt-3 text-[10px] font-semibold tracking-wider text-white uppercase border-t border-neutral-800">
@@ -125,9 +126,7 @@ export const MarketplaceHome = ({ user, onLogout, cart }) => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {featuredProducts.map(product => {
                 const baseImage = product.images?.[0] || '/logo.png';
-                const imageSrc = baseImage.startsWith('http') || baseImage.startsWith('/uploads') 
-                  ? `https://api.kingcreativestudio.my.id/mamun-socks${baseImage}` 
-                  : baseImage;
+                const imageSrc = getAssetURL(baseImage);
 
                 // Compute price range
                 const variantPrices = product.variants?.map(v => parseFloat(v.price)).filter(p => !isNaN(p)) || [];
@@ -158,7 +157,7 @@ export const MarketplaceHome = ({ user, onLogout, cart }) => {
                         <h4 className="text-xs font-bold text-neutral-950 uppercase tracking-wider line-clamp-1 group-hover:text-emerald-600 transition-colors">
                           {product.name}
                         </h4>
-                        <p className="text-[10px] text-neutral-400 font-light line-clamp-2 mt-1">
+                        <p className="text-[10px] text-neutral-700 font-medium line-clamp-2 mt-1">
                           {product.description || 'Rajutan premium dengan benang berkualitas tinggi.'}
                         </p>
                       </div>
@@ -181,7 +180,7 @@ export const MarketplaceHome = ({ user, onLogout, cart }) => {
               Informasi Toko
             </span>
             <h3 className="text-2xl font-black uppercase tracking-wider">Lokasi & Operasional</h3>
-            <p className="text-xs text-neutral-500 font-light leading-relaxed max-w-md">Kunjungi workshop kami langsung di Bandung atau hubungi kami melalui surel dan telepon untuk pemesanan partai besar (kustom merk/panjang rajutan).</p>
+            <p className="text-xs text-neutral-800 font-medium leading-relaxed max-w-md">Kunjungi workshop kami langsung di Bandung atau hubungi kami melalui surel dan telepon untuk pemesanan partai besar (kustom merk/panjang rajutan).</p>
             <div className="pt-2 text-xs space-y-3 font-medium text-neutral-600">
               <div className="flex items-start gap-2">
                 <MapPin size={16} className="text-neutral-450 mt-0.5 flex-shrink-0" />
@@ -203,8 +202,8 @@ export const MarketplaceHome = ({ user, onLogout, cart }) => {
           </div>
           <div className="bg-neutral-900 text-white rounded-3xl p-6 sm:p-8 flex flex-col justify-between space-y-6">
             <div className="space-y-2">
-              <h4 className="text-sm font-black uppercase tracking-wider text-emerald-400">Reseller & Partai Besar</h4>
-              <p className="text-xs text-neutral-300 font-light leading-relaxed">Dapatkan potongan harga spesial untuk pembelian minimal 10 lusin kaos kaki. Sangat cocok untuk toko olahraga, sekolah, reseller offline, maupun online.</p>
+              <h4 className="text-sm font-black uppercase tracking-wider text-emerald-450">Reseller & Partai Besar</h4>
+              <p className="text-xs text-slate-100 font-normal leading-relaxed">Dapatkan potongan harga spesial untuk pembelian minimal 10 lusin kaos kaki. Sangat cocok untuk toko olahraga, sekolah, reseller offline, maupun online.</p>
             </div>
             <div>
               <a

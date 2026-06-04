@@ -1,11 +1,44 @@
 import axios from "axios";
 
-// Fallback to local port if VITE_API_URL is not set
-// const baseURL = import.meta.env.VITE_API_URL || "https://api.kingcreativestudio.my.id/mamun-socks/api";
-const baseURL = import.meta.env.VITE_API_URL || "https://api.kingcreativestudio.my.id/mamun-socks/api";
+// Determine the API base URL dynamically based on the current hostname
+const getBaseURL = () => {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  // Check if we are running locally on localhost/127.0.0.1
+  if (
+    typeof window !== "undefined" &&
+    (window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1" ||
+      window.location.hostname.startsWith("192.168."))
+  ) {
+    return "http://localhost:5001/api";
+  }
+  return "https://api.kingcreativestudio.my.id/mamun-socks/api";
+};
+
+// Helper to resolve asset URLs dynamically for local vs production backend
+export const getAssetURL = (path) => {
+  if (!path) return "";
+  if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("data:")) {
+    return path;
+  }
+  
+  // Clean potential duplicate slash at path beginning
+  const cleanPath = path.startsWith("/") ? path : `/${path}`;
+
+  const isLocal =
+    typeof window !== "undefined" &&
+    (window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1" ||
+      window.location.hostname.startsWith("192.168."));
+
+  const host = isLocal ? "http://localhost:5001" : "https://api.kingcreativestudio.my.id/mamun-socks";
+  return `${host}${cleanPath}`;
+};
 
 export const api = axios.create({
-  baseURL,
+  baseURL: getBaseURL(),
 });
 
 // Interceptor to inject JWT token automatically
@@ -21,3 +54,4 @@ api.interceptors.request.use(
     return Promise.reject(error);
   }
 );
+

@@ -47,6 +47,9 @@ export const Register = () => {
         </div>
 
         <div className="bg-slate-800/50 border border-slate-700/50 backdrop-blur-xl p-8 rounded-3xl shadow-2xl">
+          <Link to="/" className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors mb-6 font-semibold uppercase tracking-wider">
+            <ArrowLeft size={14} /> Kembali ke Beranda
+          </Link>
           <form className="space-y-5" onSubmit={handleRegister}>
             <div>
               <label className="block text-sm font-medium text-slate-300">Nama Lengkap</label>

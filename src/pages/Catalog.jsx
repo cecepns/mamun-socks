@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Search, ChevronLeft, ChevronRight, ShoppingBag, MapPin, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { request } from '../utils/request';
+import { getAssetURL } from '../utils/api';
 import { API_ENDPOINTS } from '../utils/endpoints';
 import { Header } from '../components/Header';
 
@@ -70,7 +71,7 @@ export const Catalog = ({ user, cart, onLogout }) => {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-6">
             <div>
               <h2 className="text-2xl font-black text-slate-900 uppercase tracking-wide">Katalog Kaos Kaki</h2>
-              <p className="text-xs text-slate-400 mt-1">Temukan koleksi rajutan kaos kaki premium terbaik dari produsen lokal.</p>
+              <p className="text-xs text-slate-700 font-semibold mt-1">Temukan koleksi rajutan kaos kaki premium terbaik dari produsen lokal.</p>
             </div>
             <div className="relative w-full md:max-w-md">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
@@ -98,16 +99,14 @@ export const Catalog = ({ user, cart, onLogout }) => {
           ) : products.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-28 bg-white border border-slate-100 rounded-3xl text-slate-400">
               <ShoppingBag size={48} className="stroke-1 mb-4 text-slate-300" />
-              <p className="text-xs font-bold uppercase tracking-widest text-slate-700">Produk tidak ditemukan</p>
-              <p className="text-[10px] mt-1 text-slate-400">Coba gunakan kata kunci pencarian yang lain.</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-slate-800">Produk tidak ditemukan</p>
+              <p className="text-[10px] mt-1 text-slate-600 font-medium">Coba gunakan kata kunci pencarian yang lain.</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-10">
               {products.map(product => {
                 const baseImage = product.images?.[0] || '/logo.png';
-                const imageSrc = baseImage.startsWith('http') || baseImage.startsWith('/uploads') 
-                  ? `https://api.kingcreativestudio.my.id/mamun-socks${baseImage}` 
-                  : baseImage;
+                const imageSrc = getAssetURL(baseImage);
 
                 // Compute price range
                 const variantPrices = product.variants?.map(v => parseFloat(v.price)).filter(p => !isNaN(p)) || [];
@@ -141,7 +140,7 @@ export const Catalog = ({ user, cart, onLogout }) => {
                         <h3 className="text-xs font-bold text-slate-900 group-hover:text-emerald-600 transition-colors uppercase tracking-wider line-clamp-1">
                           {product.name}
                         </h3>
-                        <p className="text-[10px] text-slate-400 font-light line-clamp-2 leading-relaxed mt-1">
+                        <p className="text-[10px] text-slate-700 font-medium line-clamp-2 leading-relaxed mt-1">
                           {product.description || 'Rajutan premium dengan benang berkualitas tinggi.'}
                         </p>
                       </div>
@@ -150,7 +149,7 @@ export const Catalog = ({ user, cart, onLogout }) => {
                         <span className="text-[11px] font-black text-slate-950 tracking-wider">
                           {priceString}
                         </span>
-                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                        <span className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">
                           {product.variants?.length || 0} Model
                         </span>
                       </div>

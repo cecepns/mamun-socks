@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { KeyRound, User, LogIn, ArrowRight } from 'lucide-react';
+import { KeyRound, User, LogIn, ArrowRight, ArrowLeft } from 'lucide-react';
 import { request } from '../utils/request';
 import { API_ENDPOINTS } from '../utils/endpoints';
 
@@ -53,6 +53,9 @@ export const Login = ({ onLoginSuccess }) => {
         </div>
 
         <div className="bg-slate-800/50 border border-slate-700/50 backdrop-blur-xl p-8 rounded-3xl shadow-2xl">
+          <Link to="/" className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors mb-6 font-semibold uppercase tracking-wider">
+            <ArrowLeft size={14} /> Kembali ke Beranda
+          </Link>
           <form className="space-y-6" onSubmit={handleLogin}>
             <div>
               <label className="block text-sm font-medium text-slate-300">Username</label>

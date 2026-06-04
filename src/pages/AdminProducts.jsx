@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Edit2, Search, Video, Image as ImageIcon, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { request } from '../utils/request';
+import { getAssetURL } from '../utils/api';
 import { API_ENDPOINTS } from '../utils/endpoints';
 import { Modal } from '../components/Modals';
 
@@ -309,7 +310,7 @@ export const AdminProducts = () => {
                   <tr key={product.id} className="hover:bg-slate-50/50 text-slate-700">
                     <td className="p-4 flex items-center gap-3">
                       <img
-                        src={baseImage.startsWith('http') || baseImage.startsWith('/uploads') ? `https://api.kingcreativestudio.my.id/mamun-socks${baseImage}` : baseImage}
+                        src={getAssetURL(baseImage)}
                         alt=""
                         className="w-10 h-10 rounded-lg object-cover border border-slate-100"
                       />
@@ -465,7 +466,7 @@ export const AdminProducts = () => {
                     {images.map((img, idx) => (
                       <div key={idx} className="relative w-12 h-12 rounded-lg border border-slate-200 overflow-hidden flex-shrink-0">
                         <img
-                          src={img.startsWith('http') || img.startsWith('/uploads') ? `https://api.kingcreativestudio.my.id/mamun-socks${img}` : img}
+                          src={getAssetURL(img)}
                           alt=""
                           className="w-full h-full object-cover"
                         />

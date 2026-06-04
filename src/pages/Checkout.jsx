@@ -3,6 +3,7 @@ import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { Trash2, ShoppingBag, MapPin, ClipboardList, User, ArrowLeft, Search, Upload, CheckCircle2, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { request } from '../utils/request';
+import { getAssetURL } from '../utils/api';
 import { API_ENDPOINTS } from '../utils/endpoints';
 import { Header } from '../components/Header';
 
@@ -299,16 +300,14 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
                 <div className="space-y-4 max-h-[350px] overflow-y-auto pr-1.5 scrollbar-thin">
                   {itemsToCheckout.map((item, idx) => {
                     const img = item.image || '/logo.png';
-                    const imageSrc = img.startsWith('http') || img.startsWith('/uploads') 
-                      ? `https://api.kingcreativestudio.my.id/mamun-socks${img}` 
-                      : img;
+                    const imageSrc = getAssetURL(img);
                     
                     return (
                       <div key={`${item.variant_id}-${idx}`} className="flex items-center justify-between gap-4 p-3.5 bg-slate-50/70 border border-slate-100 rounded-2xl">
                         <img src={imageSrc} alt={item.name} className="w-12 h-14 rounded-xl object-cover border border-slate-100 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
                           <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider truncate">{item.name}</h4>
-                          <p className="text-[10px] text-slate-400 capitalize mt-0.5">{item.model} - {item.color}</p>
+                          <p className="text-[10px] text-slate-700 font-semibold capitalize mt-0.5">{item.model} - {item.color}</p>
                           <p className="text-[10px] font-extrabold text-slate-800 mt-1">
                             Rp {parseFloat(item.price).toLocaleString('id-ID')}
                           </p>
@@ -343,7 +342,7 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
                 <div className="space-y-4">
                   {/* Destination Search Box */}
                   <div className="relative">
-                    <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
+                    <label className="block text-[9px] font-bold text-slate-700 uppercase tracking-widest mb-1.5">
                       Cari Kota / Kecamatan Tujuan
                     </label>
                     <div className="relative">
@@ -385,7 +384,7 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
                       <MapPin size={16} className="text-emerald-600 flex-shrink-0 mt-0.5" />
                       <div className="text-xs">
                         <span className="font-extrabold text-slate-900 uppercase tracking-wide block">Tujuan Pengiriman Terpilih:</span>
-                        <span className="text-slate-500 font-medium block mt-0.5">{selectedDestination.label}</span>
+                        <span className="text-slate-800 font-semibold block mt-0.5">{selectedDestination.label}</span>
                       </div>
                     </div>
                   )}
@@ -399,7 +398,7 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
                   ) : (
                     shippingRates.length > 0 && (
                       <div className="space-y-3">
-                        <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">
+                        <label className="block text-[9px] font-bold text-slate-750 uppercase tracking-widest mb-1">
                           Pilih Layanan Kurir
                         </label>
                         <div className="grid grid-cols-1 gap-3 max-h-56 overflow-y-auto pr-1">
@@ -430,12 +429,12 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
                                   )}
                                   <div>
                                     <p className="text-xs font-bold text-slate-800 uppercase tracking-wider">{rate.name}</p>
-                                    <p className="text-[10px] text-slate-500 font-medium">{rate.service} - {rate.description}</p>
+                                    <p className="text-[10px] text-slate-700 font-semibold">{rate.service} - {rate.description}</p>
                                   </div>
                                 </div>
                                 <div className="text-right">
                                   <p className="text-xs font-black text-slate-900">Rp {rate.cost.toLocaleString('id-ID')}</p>
-                                  <p className="text-[9px] text-slate-400 font-medium">Estimasi: {rate.etd || '3 hari'}</p>
+                                  <p className="text-[9px] text-slate-600 font-semibold">Estimasi: {rate.etd || '3 hari'}</p>
                                 </div>
                               </label>
                             );
@@ -447,7 +446,7 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
 
                   {/* Detail Address */}
                   <div>
-                    <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
+                    <label className="block text-[9px] font-bold text-slate-750 uppercase tracking-widest mb-1.5">
                       Alamat Detail Jalan / RT / RW / No. Rumah
                     </label>
                     <textarea
@@ -462,7 +461,7 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
 
                   {/* Shipping Notes */}
                   <div>
-                    <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
+                    <label className="block text-[9px] font-bold text-slate-750 uppercase tracking-widest mb-1.5">
                       Catatan Pengiriman (Opsional)
                     </label>
                     <input
@@ -476,7 +475,7 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
 
                   {/* Order Date Selector */}
                   <div>
-                    <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
+                    <label className="block text-[9px] font-bold text-slate-750 uppercase tracking-widest mb-1.5">
                       Tanggal Pemesanan
                     </label>
                     <input
@@ -486,7 +485,7 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
                       className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all font-semibold"
                       required
                     />
-                    <p className="text-[9px] text-slate-400 mt-1">Tanggal disinkronkan dengan database transaksi terakhir.</p>
+                    <p className="text-[9px] text-slate-650 mt-1 font-medium">Tanggal disinkronkan dengan database transaksi terakhir.</p>
                   </div>
                 </div>
 
@@ -505,7 +504,7 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
 
                 <div className="space-y-4">
                   {paymentMethods.length === 0 ? (
-                    <p className="text-xs text-slate-400 font-medium">Metode pembayaran tidak tersedia.</p>
+                    <p className="text-xs text-slate-750 font-bold">Metode pembayaran tidak tersedia.</p>
                   ) : (
                     <div className="grid grid-cols-2 gap-3">
                       {paymentMethods.map(pm => {
@@ -533,18 +532,18 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
                     <div className="bg-slate-50 border border-slate-150 p-5 rounded-2xl space-y-4">
                       {selectedPayment.type === 'bank' ? (
                         <div className="space-y-1.5 text-center sm:text-left">
-                          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Transfer Manual</span>
+                          <span className="text-[9px] font-bold text-slate-750 uppercase tracking-widest block">Transfer Manual</span>
                           <p className="text-sm font-black text-slate-900 tracking-wide">{selectedPayment.name}</p>
-                          <p className="text-xs font-semibold text-slate-600 mt-1">No. Rekening: <span className="font-extrabold text-slate-950">{selectedPayment.account_number}</span></p>
-                          <p className="text-xs font-semibold text-slate-600">Atas Nama: <span className="font-extrabold text-slate-950">{selectedPayment.account_name}</span></p>
+                          <p className="text-xs font-semibold text-slate-750 mt-1">No. Rekening: <span className="font-extrabold text-slate-950">{selectedPayment.account_number}</span></p>
+                          <p className="text-xs font-semibold text-slate-750">Atas Nama: <span className="font-extrabold text-slate-950">{selectedPayment.account_name}</span></p>
                         </div>
                       ) : (
                         <div className="flex flex-col items-center justify-center space-y-3">
-                          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block self-start">QRIS Code</span>
+                          <span className="text-[9px] font-bold text-slate-750 uppercase tracking-widest block self-start">QRIS Code</span>
                           <div className="w-40 h-40 bg-white border border-slate-200 rounded-2xl p-2 flex items-center justify-center shadow-inner">
                             {selectedPayment.qr_code_image ? (
                               <img
-                                src={selectedPayment.qr_code_image.startsWith('/uploads') ? `https://api.kingcreativestudio.my.id/mamun-socks${selectedPayment.qr_code_image}` : selectedPayment.qr_code_image}
+                                src={getAssetURL(selectedPayment.qr_code_image)}
                                 alt="QRIS Code"
                                 className="w-full h-full object-contain"
                               />
@@ -552,13 +551,13 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
                               <div className="text-[10px] text-slate-400">Gambar QRIS tidak tersedia</div>
                             )}
                           </div>
-                          <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">Pindai kode QR untuk membayar</p>
+                          <p className="text-[10px] text-slate-750 font-bold uppercase tracking-wider">Pindai kode QR untuk membayar</p>
                         </div>
                       )}
 
                       {/* Receipt upload field */}
                       <div className="border-t border-slate-200 pt-4 space-y-2">
-                        <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                        <label className="block text-[9px] font-bold text-slate-750 uppercase tracking-widest">
                           Unggah Bukti Transfer
                         </label>
                         <div className="relative">
@@ -572,7 +571,7 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
                           />
                           <label
                             htmlFor="receipt-upload"
-                            className={`w-full flex items-center justify-center gap-2 border-2 border-dashed rounded-2xl py-4 cursor-pointer transition-all hover:bg-white text-xs font-semibold ${receiptUrl ? 'border-emerald-500 text-emerald-600 bg-emerald-50/20' : 'border-slate-350 text-slate-500 bg-white hover:border-slate-900'}`}
+                            className={`w-full flex items-center justify-center gap-2 border-2 border-dashed rounded-2xl py-4 cursor-pointer transition-all hover:bg-white text-xs font-bold ${receiptUrl ? 'border-emerald-500 text-emerald-600 bg-emerald-50/20' : 'border-slate-350 text-slate-750 bg-white hover:border-slate-900'}`}
                           >
                             {uploadingReceipt ? (
                               <>
@@ -595,7 +594,7 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
                         {receiptUrl && (
                           <div className="mt-2 text-center">
                             <a
-                              href={`https://api.kingcreativestudio.my.id/mamun-socks${receiptUrl}`}
+                              href={getAssetURL(receiptUrl)}
                               target="_blank"
                               rel="noreferrer"
                               className="text-[10px] text-emerald-600 font-bold hover:underline"
@@ -616,7 +615,7 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
                   Ringkasan Pembayaran
                 </h3>
 
-                <div className="space-y-3 text-xs font-medium text-slate-600">
+                <div className="space-y-3 text-xs font-semibold text-slate-750">
                   <div className="flex justify-between">
                     <span>Total Belanja:</span>
                     <span className="font-extrabold text-slate-950">Rp {productTotal.toLocaleString('id-ID')}</span>
