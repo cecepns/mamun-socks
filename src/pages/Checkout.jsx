@@ -410,7 +410,7 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
                             return (
                               <label
                                 key={`${rate.code}-${rate.service}-${idx}`}
-                                className={`flex items-center justify-between p-3.5 border rounded-2xl cursor-pointer transition-all ${isSelected ? 'border-slate-900 bg-slate-900/5 shadow-sm' : 'border-slate-200 hover:border-slate-300'}`}
+                                className={`flex items-start gap-4 p-4 border rounded-3xl cursor-pointer transition-all ${isSelected ? 'border-slate-900 bg-slate-900/5 shadow-sm' : 'border-slate-200 hover:border-slate-300'}`}
                               >
                                 <input
                                   type="radio"
@@ -419,22 +419,26 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
                                   checked={isSelected}
                                   onChange={() => setSelectedRate(rate)}
                                 />
-                                <div className="flex items-center gap-3">
+                                <div className="flex-shrink-0 mt-0.5">
                                   {logo ? (
-                                    <img src={logo} alt={rate.name} className="w-10 h-7 object-contain bg-white rounded p-0.5 border" />
+                                    <img src={logo} alt={rate.name} className="w-14 h-10 object-contain rounded-lg" />
                                   ) : (
-                                    <div className="w-10 h-7 bg-slate-100 flex items-center justify-center text-[9px] font-bold rounded">
+                                    <div className="w-14 h-10 bg-slate-100 flex items-center justify-center text-[10px] font-extrabold rounded-lg uppercase">
                                       {rate.code.toUpperCase()}
                                     </div>
                                   )}
-                                  <div>
-                                    <p className="text-xs font-bold text-slate-800 uppercase tracking-wider">{rate.name}</p>
-                                    <p className="text-[10px] text-slate-700 font-semibold">{rate.service} - {rate.description}</p>
-                                  </div>
                                 </div>
-                                <div className="text-right">
-                                  <p className="text-xs font-black text-slate-900">Rp {rate.cost.toLocaleString('id-ID')}</p>
-                                  <p className="text-[9px] text-slate-600 font-semibold">Estimasi: {rate.etd || '3 hari'}</p>
+                                <div className="flex-1 min-w-0 space-y-1">
+                                  <p className="text-xs font-black text-slate-950 uppercase tracking-wider">{rate.name}</p>
+                                  <p className="text-[10px] text-slate-700 font-medium leading-relaxed">{rate.service} - {rate.description}</p>
+                                  <div className="flex flex-wrap items-center gap-2.5 pt-1.5">
+                                    <span className="text-xs font-black text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full">
+                                      Rp {rate.cost.toLocaleString('id-ID')}
+                                    </span>
+                                    <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded-full">
+                                      Estimasi: {rate.etd || '3 hari'}
+                                    </span>
+                                  </div>
                                 </div>
                               </label>
                             );
