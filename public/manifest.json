@@ -1,0 +1,17 @@
+{
+  "short_name": "Mamun Socks",
+  "name": "Mamun Socks - Premium Local Kaos Kaki",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#064e3b",
+  "theme_color": "#047857",
+  "display": "standalone",
+  "orientation": "portrait"
+}
