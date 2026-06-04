@@ -19,7 +19,19 @@ export const MarketplaceHome = ({ user, onLogout }) => {
   const [limit] = useState(10);
 
   // Cart states
-  const [cart, setCart] = useState([]);
+  const [cart, setCart] = useState(() => {
+    try {
+      const savedCart = localStorage.getItem('mamun_socks_cart');
+      return savedCart ? JSON.parse(savedCart) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('mamun_socks_cart', JSON.stringify(cart));
+  }, [cart]);
+
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   // Selected product modal

@@ -21,10 +21,9 @@ export const CartModal = ({ isOpen, onClose, cartItems, onUpdateQuantity, onRemo
 
   const fetchProvinces = async () => {
     try {
-      const response = await fetch('https://wilayah.id/api/provinces.json');
-      const result = await response.json();
-      if (result && result.data) {
-        setProvinces(result.data);
+      const res = await request.get(API_ENDPOINTS.REGIONS.PROVINCES);
+      if (res.success) {
+        setProvinces(res.data);
       }
     } catch (e) {
       console.error('Gagal mengambil data provinsi', e);
@@ -33,10 +32,9 @@ export const CartModal = ({ isOpen, onClose, cartItems, onUpdateQuantity, onRemo
 
   const fetchRegencies = async (provCode) => {
     try {
-      const response = await fetch(`https://wilayah.id/api/regencies/${provCode}.json`);
-      const result = await response.json();
-      if (result && result.data) {
-        setRegencies(result.data);
+      const res = await request.get(API_ENDPOINTS.REGIONS.REGENCIES(provCode));
+      if (res.success) {
+        setRegencies(res.data);
       }
     } catch (e) {
       console.error('Gagal mengambil data kabupaten', e);
@@ -45,10 +43,9 @@ export const CartModal = ({ isOpen, onClose, cartItems, onUpdateQuantity, onRemo
 
   const fetchDistricts = async (regencyCode) => {
     try {
-      const response = await fetch(`https://wilayah.id/api/districts/${regencyCode}.json`);
-      const result = await response.json();
-      if (result && result.data) {
-        setDistricts(result.data);
+      const res = await request.get(API_ENDPOINTS.REGIONS.DISTRICTS(regencyCode));
+      if (res.success) {
+        setDistricts(res.data);
       }
     } catch (e) {
       console.error('Gagal mengambil data kecamatan', e);

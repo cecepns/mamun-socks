@@ -33,5 +33,10 @@ export const API_ENDPOINTS = {
     GET: "/settings",
     UPDATE: "/settings",
   },
+  REGIONS: {
+    PROVINCES: "/regions/provinces",
+    REGENCIES: (provCode) => `/regions/regencies/${provCode}`,
+    DISTRICTS: (regencyCode) => `/regions/districts/${regencyCode}`,
+  },
   UPLOAD: "/upload",
 };
