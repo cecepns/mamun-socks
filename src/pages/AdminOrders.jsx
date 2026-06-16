@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Eye, ClipboardList, Clock, CheckCircle, XCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Eye, ClipboardList, Clock, CheckCircle, XCircle, ChevronLeft, ChevronRight, Printer, Link2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { request } from '../utils/request';
 import { getAssetURL } from '../utils/api';
 import { API_ENDPOINTS } from '../utils/endpoints';
 import { Modal } from '../components/Modals';
+import { OrderInvoice } from '../components/OrderInvoice';
 
 export const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -19,7 +20,23 @@ export const AdminOrders = () => {
   // Selected Order for Detail Modal
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [showInvoice, setShowInvoice] = useState(false);
   const [statusLoading, setStatusLoading] = useState(false);
+
+  const calcProfit = (order) => {
+    if (!order?.items) return 0;
+    return order.items.reduce((sum, item) => {
+      const sell = parseFloat(item.price) * item.quantity;
+      const cost = parseFloat(item.cost_price || 0) * item.quantity;
+      return sum + (sell - cost);
+    }, 0);
+  };
+
+  const copyOrderLink = (orderNumber) => {
+    const link = `${window.location.origin}/pesanan/${orderNumber}`;
+    navigator.clipboard.writeText(link);
+    toast.success('Link pesanan disalin!');
+  };
 
   // Debounced Search Trigger
   useEffect(() => {
@@ -240,6 +257,9 @@ export const AdminOrders = () => {
                 <p className="text-[10px] font-bold text-slate-400 uppercase">Informasi Pembeli</p>
                 <p className="text-slate-800 font-semibold mt-1 text-sm">{selectedOrder.customer_name}</p>
                 <p className="text-slate-500 mt-0.5">Username: @{selectedOrder.customer_username}</p>
+                {selectedOrder.recipient_name && (
+                  <p className="text-slate-700 mt-2 font-medium">Penerima: {selectedOrder.recipient_name} ({selectedOrder.recipient_phone})</p>
+                )}
                 <p className="text-slate-500 mt-2">
                   Tanggal: {new Date(selectedOrder.order_date).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                 </p>
@@ -289,6 +309,18 @@ export const AdminOrders = () => {
               </div>
             </div>
 
+            {/* Actions bar */}
+            <div className="flex flex-wrap gap-2">
+              <button type="button" onClick={() => copyOrderLink(selectedOrder.order_number)}
+                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[10px] font-bold flex items-center gap-1">
+                <Link2 size={12} /> Salin Link Pesanan
+              </button>
+              <button type="button" onClick={() => setShowInvoice(true)}
+                className="px-3 py-1.5 bg-slate-900 text-white rounded-lg text-[10px] font-bold flex items-center gap-1">
+                <Printer size={12} /> Cetak Invoice
+              </button>
+            </div>
+
             {/* Items table */}
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">Item yang Dipesan</p>
@@ -296,9 +328,11 @@ export const AdminOrders = () => {
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
                     <tr className="bg-slate-50 border-b border-slate-100 font-semibold text-slate-500">
+                      <th className="p-3">SKU</th>
                       <th className="p-3">Nama Produk</th>
                       <th className="p-3">Varian (Model - Warna)</th>
                       <th className="p-3 text-right">Harga</th>
+                      <th className="p-3 text-right">Modal</th>
                       <th className="p-3 text-center">Jumlah</th>
                       <th className="p-3 text-right">Subtotal</th>
                     </tr>
@@ -306,9 +340,11 @@ export const AdminOrders = () => {
                   <tbody className="divide-y divide-slate-50">
                     {selectedOrder.items?.map((item, idx) => (
                       <tr key={idx} className="text-slate-700">
+                        <td className="p-3 font-mono text-[10px]">{item.sku || item.variant_sku || '-'}</td>
                         <td className="p-3 font-semibold text-slate-800">{item.product_name}</td>
                         <td className="p-3 capitalize">{item.model} - {item.color}</td>
                         <td className="p-3 text-right">Rp {parseFloat(item.price).toLocaleString('id-ID')}</td>
+                        <td className="p-3 text-right text-slate-500">Rp {parseFloat(item.cost_price || 0).toLocaleString('id-ID')}</td>
                         <td className="p-3 text-center font-semibold">{item.quantity} pasang</td>
                         <td className="p-3 text-right font-semibold text-slate-800">
                           Rp {(parseFloat(item.price) * item.quantity).toLocaleString('id-ID')}
@@ -334,6 +370,13 @@ export const AdminOrders = () => {
                   <span className="text-emerald-700">Total Pembayaran:</span>
                   <span className="text-emerald-700">Rp {parseFloat(selectedOrder.total_amount).toLocaleString('id-ID')}</span>
                 </div>
+                <div className="flex justify-between w-64 text-blue-700 font-bold">
+                  <span>Estimasi Untung:</span>
+                  <span>Rp {calcProfit(selectedOrder).toLocaleString('id-ID')}</span>
+                </div>
+                {selectedOrder.shipping_cod ? (
+                  <p className="text-[10px] text-amber-600 w-64 text-right">* Ongkir COD — dibayar penerima saat terima paket</p>
+                ) : null}
               </div>
             </div>
 
@@ -389,6 +432,16 @@ export const AdminOrders = () => {
 
           </div>
         )}
+      </Modal>
+
+      {/* Invoice Modal */}
+      <Modal
+        isOpen={showInvoice && !!selectedOrder}
+        onClose={() => setShowInvoice(false)}
+        title={`Invoice ${selectedOrder?.order_number}`}
+        size="lg"
+      >
+        {selectedOrder && <OrderInvoice order={selectedOrder} onClose={() => setShowInvoice(false)} />}
       </Modal>
 
     </div>

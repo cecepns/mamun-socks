@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ShoppingCart, ShoppingBag, ArrowLeft, Play, MapPin, Check } from 'lucide-react';
+import { ShoppingCart, ShoppingBag, ArrowLeft, Play, MapPin, Check, Tag } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { request } from '../utils/request';
 import { getAssetURL } from '../utils/api';
 import { API_ENDPOINTS } from '../utils/endpoints';
 import { Header } from '../components/Header';
+import { QuantityInput } from '../components/QuantityInput';
 
 export const ProductDetail = ({ user, onAddToCart, cart, onLogout }) => {
   const { id } = useParams();
@@ -72,6 +73,33 @@ export const ProductDetail = ({ user, onAddToCart, cart, onLogout }) => {
     ? parseFloat(selectedVariant.price) 
     : parseFloat(product.price);
 
+  const resolvePriceForQty = (qty) => {
+    const tiers = selectedVariant?.pricing_tiers || [];
+    const match = tiers.find(t => qty >= t.min_qty && qty <= t.max_qty);
+    if (match) return parseFloat(match.price);
+    return currentPrice;
+  };
+
+  const displayPrice = resolvePriceForQty(quantity);
+  const variantImage = selectedVariant?.image || product.images?.[0] || '/logo.png';
+  const itemWeight = parseFloat(selectedVariant?.weight) || parseFloat(product.weight) || 100;
+
+  const buildCartItem = (qty) => ({
+    product_id: product.id,
+    variant_id: selectedVariant.id,
+    name: product.name,
+    model: selectedModel,
+    color: selectedColor,
+    price: resolvePriceForQty(qty),
+    quantity: qty,
+    stock: stockAvailable,
+    weight: itemWeight,
+    sku: selectedVariant.sku,
+    image: variantImage,
+    base_price: currentPrice,
+    pricing_tiers: selectedVariant.pricing_tiers || []
+  });
+
   const handleAddToCart = () => {
     if (!selectedVariant) {
       toast.error('Silakan pilih variasi model dan warna terlebih dahulu.');
@@ -86,17 +114,7 @@ export const ProductDetail = ({ user, onAddToCart, cart, onLogout }) => {
       return;
     }
 
-    onAddToCart({
-      product_id: product.id,
-      variant_id: selectedVariant.id,
-      name: product.name,
-      model: selectedModel,
-      color: selectedColor,
-      price: currentPrice,
-      quantity: quantity,
-      stock: stockAvailable,
-      image: product.images?.[0] || '/logo.png'
-    });
+    onAddToCart(buildCartItem(quantity));
 
     toast.success('Dimasukkan ke keranjang!');
   };
@@ -121,17 +139,7 @@ export const ProductDetail = ({ user, onAddToCart, cart, onLogout }) => {
       return;
     }
 
-    const buyNowItem = {
-      product_id: product.id,
-      variant_id: selectedVariant.id,
-      name: product.name,
-      model: selectedModel,
-      color: selectedColor,
-      price: currentPrice,
-      quantity: quantity,
-      stock: stockAvailable,
-      image: product.images?.[0] || '/logo.png'
-    };
+    const buyNowItem = buildCartItem(quantity);
 
     navigate('/checkout', { state: { directItems: [buyNowItem] } });
   };
@@ -161,15 +169,11 @@ export const ProductDetail = ({ user, onAddToCart, cart, onLogout }) => {
             <div className="space-y-4">
               <div className="relative aspect-[4/5] w-full rounded-2xl bg-slate-50 overflow-hidden border border-slate-100 flex items-center justify-center">
                 {activeMedia === 'image' ? (
-                  images.length > 0 ? (
-                    <img
-                      src={getAssetURL(images[activeImageIndex])}
-                      alt={product.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <img src="/logo.png" alt="Placeholder" className="w-1/3 object-contain opacity-40" />
-                  )
+                  <img
+                    src={selectedVariant?.image ? getAssetURL(selectedVariant.image) : (images.length > 0 ? getAssetURL(images[activeImageIndex]) : '/logo.png')}
+                    alt={product.name}
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
                   product.video && (
                     <video
@@ -219,8 +223,14 @@ export const ProductDetail = ({ user, onAddToCart, cart, onLogout }) => {
                   </span>
                   <h2 className="text-2xl font-black text-slate-900 uppercase tracking-wider mt-3 leading-snug">{product.name}</h2>
                   <p className="text-xl font-black text-emerald-600 tracking-wider mt-2 pb-4 border-b border-slate-100">
-                    Rp {currentPrice.toLocaleString('id-ID')}
+                    Rp {displayPrice.toLocaleString('id-ID')}
+                    {displayPrice !== currentPrice && (
+                      <span className="text-xs text-slate-400 line-through ml-2">Rp {currentPrice.toLocaleString('id-ID')}</span>
+                    )}
                   </p>
+                  {selectedVariant?.sku && (
+                    <p className="text-[10px] text-slate-500 font-mono">SKU: {selectedVariant.sku}</p>
+                  )}
                 </div>
 
                 <div>
@@ -263,6 +273,22 @@ export const ProductDetail = ({ user, onAddToCart, cart, onLogout }) => {
                   </div>
                 </div>
 
+                {/* Wholesale tiers */}
+                {selectedVariant?.pricing_tiers?.length > 0 && (
+                  <div className="bg-amber-50 border border-amber-100 p-4 rounded-2xl">
+                    <p className="text-[9px] font-extrabold text-amber-800 uppercase tracking-widest mb-2 flex items-center gap-1">
+                      <Tag size={10} /> Harga Grosir
+                    </p>
+                    <div className="space-y-1">
+                      {selectedVariant.pricing_tiers.map((tier, i) => (
+                        <p key={i} className="text-[10px] text-amber-900 font-semibold">
+                          {tier.min_qty} — {tier.max_qty >= 999999 ? '∞' : tier.max_qty} pasang: Rp {parseFloat(tier.price).toLocaleString('id-ID')}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Stock Selector */}
                 <div className="bg-slate-50 border border-slate-100 p-4 rounded-2xl flex items-center justify-between mt-6">
                   <div>
@@ -273,23 +299,12 @@ export const ProductDetail = ({ user, onAddToCart, cart, onLogout }) => {
                   </div>
 
                   {stockAvailable > 0 && (
-                    <div className="flex items-center border border-slate-200 bg-white rounded-full overflow-hidden shadow-sm">
-                      <button
-                        disabled={quantity <= 1}
-                        onClick={() => setQuantity(q => q - 1)}
-                        className="px-3 py-1.5 hover:bg-slate-50 text-slate-600 font-bold transition-colors disabled:opacity-30"
-                      >
-                        -
-                      </button>
-                      <span className="px-4 text-xs font-bold text-slate-800">{quantity}</span>
-                      <button
-                        disabled={quantity >= stockAvailable}
-                        onClick={() => setQuantity(q => q + 1)}
-                        className="px-3 py-1.5 hover:bg-slate-50 text-slate-600 font-bold transition-colors disabled:opacity-30"
-                      >
-                        +
-                      </button>
-                    </div>
+                    <QuantityInput
+                      value={quantity}
+                      onChange={setQuantity}
+                      min={1}
+                      max={stockAvailable}
+                    />
                   )}
                 </div>
               </div>

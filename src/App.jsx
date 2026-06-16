@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { LayoutDashboard, ShoppingBag, ClipboardList, Users, ArrowUpDown, BarChart3, LogOut, Shield, Menu, X, CreditCard } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, ClipboardList, Users, ArrowUpDown, BarChart3, LogOut, Shield, Menu, X, CreditCard, ScanLine } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import { request } from './utils/request';
@@ -24,6 +24,8 @@ import { AdminUsers } from './pages/AdminUsers';
 import { AdminStockLogs } from './pages/AdminStockLogs';
 import { AdminReports } from './pages/AdminReports';
 import { AdminPaymentMethods } from './pages/AdminPaymentMethods';
+import { AdminOrderScan } from './pages/AdminOrderScan';
+import { OrderDetail } from './pages/OrderDetail';
 
 // ==========================================
 // ADMIN LAYOUT SIDEBAR CONTAINER
@@ -35,6 +37,7 @@ const AdminLayout = ({ user, onLogout, children, activeTab, setActiveTab }) => {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'orders', label: 'Order / Pesanan', icon: ClipboardList },
+    { id: 'scan', label: 'Cek SKU & Pesanan', icon: ScanLine },
     { id: 'products', label: 'Produk Kaos Kaki', icon: ShoppingBag },
     { id: 'stock', label: 'Stok & Opname', icon: ArrowUpDown },
     { id: 'users', label: 'Manajemen User', icon: Users },
@@ -163,13 +166,25 @@ export default function App() {
     localStorage.setItem('mamun_socks_cart', JSON.stringify(cart));
   }, [cart]);
 
+  const resolveCartPrice = (item, qty) => {
+    const tiers = item.pricing_tiers || [];
+    const match = tiers.find(t => qty >= t.min_qty && qty <= t.max_qty);
+    if (match) return parseFloat(match.price);
+    return parseFloat(item.base_price || item.price);
+  };
+
   const handleAddToCart = (item) => {
     setCart(prevCart => {
       const existingIdx = prevCart.findIndex(i => i.variant_id === item.variant_id);
       if (existingIdx > -1) {
         const newCart = [...prevCart];
         const newQty = newCart[existingIdx].quantity + item.quantity;
-        newCart[existingIdx].quantity = Math.min(newQty, item.stock);
+        const cappedQty = Math.min(newQty, item.stock);
+        newCart[existingIdx] = {
+          ...newCart[existingIdx],
+          quantity: cappedQty,
+          price: resolveCartPrice({ ...newCart[existingIdx], pricing_tiers: item.pricing_tiers, base_price: item.base_price }, cappedQty)
+        };
         return newCart;
       }
       return [...prevCart, item];
@@ -179,7 +194,8 @@ export default function App() {
   const handleUpdateCartQty = (variantId, newQty) => {
     setCart(prevCart => prevCart.map(item => {
       if (item.variant_id === variantId) {
-        return { ...item, quantity: Math.min(newQty, item.stock) };
+        const qty = Math.min(newQty, item.stock);
+        return { ...item, quantity: qty, price: resolveCartPrice(item, qty) };
       }
       return item;
     }));
@@ -324,6 +340,11 @@ export default function App() {
           element={<Orders user={user} cart={cart} onLogout={handleLogout} />}
         />
 
+        <Route
+          path="/pesanan/:orderNumber"
+          element={<OrderDetail user={user} cart={cart} onLogout={handleLogout} />}
+        />
+
         {/* Admin Panels */}
         <Route
           path="/admin"
@@ -336,6 +357,7 @@ export default function App() {
               <AdminLayout user={user} onLogout={handleLogout} activeTab={adminTab} setActiveTab={setAdminTab}>
                 {adminTab === 'dashboard' && <AdminDashboard navigateToTab={setAdminTab} />}
                 {adminTab === 'orders' && <AdminOrders />}
+                {adminTab === 'scan' && <AdminOrderScan />}
                 {adminTab === 'products' && <AdminProducts />}
                 {adminTab === 'stock' && <AdminStockLogs />}
                 {adminTab === 'users' && <AdminUsers currentUser={user} />}

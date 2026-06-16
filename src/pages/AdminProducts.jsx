@@ -24,6 +24,7 @@ export const AdminProducts = () => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
+  const [weight, setWeight] = useState('100');
   const [images, setImages] = useState([]);
   const [video, setVideo] = useState('');
   const [variants, setVariants] = useState([]); // [{id, model, color, stock}]
@@ -64,9 +65,10 @@ export const AdminProducts = () => {
     setName('');
     setDescription('');
     setPrice('');
+    setWeight('100');
     setImages([]);
     setVideo('');
-    setVariants([{ model: 'Nike', color: 'merah', price: 8000, stock: 10 }]); // default sample
+    setVariants([{ model: 'Nike', color: 'merah', price: 8000, cost_price: 5000, stock: 10, pricing_tiers: [] }]);
     setIsModalOpen(true);
   };
 
@@ -76,14 +78,20 @@ export const AdminProducts = () => {
     setName(product.name);
     setDescription(product.description || '');
     setPrice(product.price);
+    setWeight(product.weight || '100');
     setImages(product.images || []);
     setVideo(product.video || '');
     setVariants(product.variants?.map(v => ({
       id: v.id,
+      sku: v.sku,
       model: v.model,
       color: v.color,
       price: v.price,
-      stock: v.stock
+      cost_price: v.cost_price || 0,
+      stock: v.stock,
+      image: v.image || '',
+      weight: v.weight || '',
+      pricing_tiers: v.pricing_tiers || []
     })) || []);
     setIsModalOpen(true);
   };
@@ -124,7 +132,7 @@ export const AdminProducts = () => {
 
   // Variant helper functions
   const addVariantRow = () => {
-    setVariants([...variants, { model: '', color: '', price: price || 0, stock: 0 }]);
+    setVariants([...variants, { model: '', color: '', price: price || 0, cost_price: 0, stock: 0, image: '', pricing_tiers: [] }]);
   };
 
   const removeVariantRow = (idx) => {
@@ -137,6 +145,45 @@ export const AdminProducts = () => {
         return { ...v, [field]: val };
       }
       return v;
+    }));
+  };
+
+  const handleVariantImageUpload = async (idx, e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('images', file);
+    try {
+      const res = await request.post(API_ENDPOINTS.UPLOAD, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      if (res.success && res.data.images?.[0]) {
+        updateVariantRow(idx, 'image', res.data.images[0]);
+        toast.success('Gambar variasi diunggah.');
+      }
+    } catch (err) {
+      toast.error('Gagal mengunggah gambar variasi.');
+    }
+  };
+
+  const addTierRow = (variantIdx) => {
+    setVariants(variants.map((v, i) => {
+      if (i !== variantIdx) return v;
+      return { ...v, pricing_tiers: [...(v.pricing_tiers || []), { min_qty: 12, max_qty: 49, price: v.price || 0 }] };
+    }));
+  };
+
+  const updateTierRow = (variantIdx, tierIdx, field, val) => {
+    setVariants(variants.map((v, i) => {
+      if (i !== variantIdx) return v;
+      const tiers = [...(v.pricing_tiers || [])];
+      tiers[tierIdx] = { ...tiers[tierIdx], [field]: val };
+      return { ...v, pricing_tiers: tiers };
+    }));
+  };
+
+  const removeTierRow = (variantIdx, tierIdx) => {
+    setVariants(variants.map((v, i) => {
+      if (i !== variantIdx) return v;
+      return { ...v, pricing_tiers: v.pricing_tiers.filter((_, ti) => ti !== tierIdx) };
     }));
   };
 
@@ -178,6 +225,7 @@ export const AdminProducts = () => {
         name,
         description,
         price: parseFloat(price),
+        weight: parseFloat(weight) || 100,
         images,
         video,
         variants: variants.map(v => ({
@@ -185,7 +233,15 @@ export const AdminProducts = () => {
           model: v.model.trim(),
           color: v.color.trim(),
           price: parseFloat(v.price) || parseFloat(price) || 0,
-          stock: parseInt(v.stock) || 0
+          cost_price: parseFloat(v.cost_price) || 0,
+          stock: parseInt(v.stock) || 0,
+          image: v.image || null,
+          weight: v.weight ? parseFloat(v.weight) : null,
+          pricing_tiers: (v.pricing_tiers || []).map(t => ({
+            min_qty: parseInt(t.min_qty),
+            max_qty: parseInt(t.max_qty),
+            price: parseFloat(t.price)
+          }))
         }))
       };
 
@@ -428,6 +484,17 @@ export const AdminProducts = () => {
               </div>
 
               <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Berat per Pasang (gram)</label>
+                <input
+                  type="number"
+                  value={weight}
+                  onChange={(e) => setWeight(e.target.value)}
+                  className="block w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                  placeholder="100"
+                />
+              </div>
+
+              <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1">Deskripsi</label>
                 <textarea
                   rows="3"
@@ -521,62 +588,64 @@ export const AdminProducts = () => {
 
             <div className="space-y-3">
               {variants.map((v, idx) => (
-                <div key={idx} className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-100 rounded-2xl">
-                  <div className="flex-1 grid grid-cols-4 gap-3">
-                    <div>
-                      <label className="block text-[9px] font-bold text-slate-500 uppercase mb-1">Model</label>
-                      <input
-                        type="text"
-                        value={v.model}
-                        onChange={(e) => updateVariantRow(idx, 'model', e.target.value)}
-                        className="block w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs"
-                        placeholder="Model (e.g. Nike)"
-                        required
-                      />
+                <div key={idx} className="p-3 bg-slate-50 border border-slate-100 rounded-2xl space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-1 grid grid-cols-2 sm:grid-cols-5 gap-3">
+                      <div>
+                        <label className="block text-[9px] font-bold text-slate-500 uppercase mb-1">Model</label>
+                        <input type="text" value={v.model} onChange={(e) => updateVariantRow(idx, 'model', e.target.value)}
+                          className="block w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs" placeholder="Nike" required />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] font-bold text-slate-500 uppercase mb-1">Warna</label>
+                        <input type="text" value={v.color} onChange={(e) => updateVariantRow(idx, 'color', e.target.value)}
+                          className="block w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs" placeholder="merah" required />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] font-bold text-slate-500 uppercase mb-1">Harga Jual</label>
+                        <input type="number" value={v.price} onChange={(e) => updateVariantRow(idx, 'price', e.target.value)}
+                          className="block w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold" required />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] font-bold text-slate-500 uppercase mb-1">Harga Modal</label>
+                        <input type="number" value={v.cost_price} onChange={(e) => updateVariantRow(idx, 'cost_price', e.target.value)}
+                          className="block w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs" placeholder="HPP" />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] font-bold text-slate-500 uppercase mb-1">Stok</label>
+                        <input type="number" value={v.stock} onChange={(e) => updateVariantRow(idx, 'stock', e.target.value)}
+                          className="block w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold" required />
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-[9px] font-bold text-slate-500 uppercase mb-1">Warna</label>
-                      <input
-                        type="text"
-                        value={v.color}
-                        onChange={(e) => updateVariantRow(idx, 'color', e.target.value)}
-                        className="block w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs"
-                        placeholder="Warna (e.g. merah)"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[9px] font-bold text-slate-500 uppercase mb-1">Harga (Rp)</label>
-                      <input
-                        type="number"
-                        value={v.price}
-                        onChange={(e) => updateVariantRow(idx, 'price', e.target.value)}
-                        className="block w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold"
-                        placeholder="Harga (e.g. 8000)"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[9px] font-bold text-slate-500 uppercase mb-1">Stok</label>
-                      <input
-                        type="number"
-                        value={v.stock}
-                        onChange={(e) => updateVariantRow(idx, 'stock', e.target.value)}
-                        className="block w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold"
-                        placeholder="Stok"
-                        required
-                      />
-                    </div>
+                    <button type="button" disabled={variants.length <= 1} onClick={() => removeVariantRow(idx)}
+                      className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg disabled:opacity-30">
+                      <Trash2 size={12} />
+                    </button>
                   </div>
 
-                  <button
-                    type="button"
-                    disabled={variants.length <= 1}
-                    onClick={() => removeVariantRow(idx)}
-                    className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-white rounded-lg transition-colors disabled:opacity-30 border border-transparent hover:border-slate-100 self-end mb-1"
-                  >
-                    <Trash2 size={12} />
-                  </button>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    {v.sku && <span className="text-[10px] font-mono bg-slate-200 px-2 py-0.5 rounded text-slate-700">SKU: {v.sku}</span>}
+                    <label className="text-[10px] font-bold text-emerald-600 cursor-pointer hover:underline">
+                      + Gambar Variasi
+                      <input type="file" accept="image/*" className="hidden" onChange={(e) => handleVariantImageUpload(idx, e)} />
+                    </label>
+                    {v.image && <img src={getAssetURL(v.image)} alt="" className="w-8 h-8 rounded object-cover border" />}
+                    <button type="button" onClick={() => addTierRow(idx)} className="text-[10px] font-bold text-amber-600 hover:underline">+ Tier Grosir</button>
+                  </div>
+
+                  {(v.pricing_tiers || []).map((tier, ti) => (
+                    <div key={ti} className="flex items-center gap-2 pl-2 border-l-2 border-amber-200">
+                      <input type="number" value={tier.min_qty} onChange={(e) => updateTierRow(idx, ti, 'min_qty', e.target.value)}
+                        className="w-16 px-2 py-1 text-xs border rounded-lg" placeholder="Min" />
+                      <span className="text-xs text-slate-400">—</span>
+                      <input type="number" value={tier.max_qty} onChange={(e) => updateTierRow(idx, ti, 'max_qty', e.target.value)}
+                        className="w-16 px-2 py-1 text-xs border rounded-lg" placeholder="Max" />
+                      <span className="text-xs text-slate-500">pasang =</span>
+                      <input type="number" value={tier.price} onChange={(e) => updateTierRow(idx, ti, 'price', e.target.value)}
+                        className="w-24 px-2 py-1 text-xs border rounded-lg font-semibold" placeholder="Harga" />
+                      <button type="button" onClick={() => removeTierRow(idx, ti)} className="text-red-400 hover:text-red-600"><Trash2 size={10} /></button>
+                    </div>
+                  ))}
                 </div>
               ))}
             </div>

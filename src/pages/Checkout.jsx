@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { Trash2, ShoppingBag, MapPin, ClipboardList, User, ArrowLeft, Search, Upload, CheckCircle2, Loader2 } from 'lucide-react';
+import { Trash2, ShoppingBag, MapPin, ClipboardList, User, ArrowLeft, Search, Upload, CheckCircle2, Loader2, Phone, MessageCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { request } from '../utils/request';
 import { getAssetURL } from '../utils/api';
 import { API_ENDPOINTS } from '../utils/endpoints';
 import { Header } from '../components/Header';
+import { QuantityInput } from '../components/QuantityInput';
 
 import anterajaLogo from '../assets/ekspedisi/anteraja.png';
 import ideLogo from '../assets/ekspedisi/id.png';
@@ -36,6 +37,8 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
   const [checkoutDate, setCheckoutDate] = useState('');
   const [shippingNotes, setShippingNotes] = useState('');
   const [shippingDetail, setShippingDetail] = useState('');
+  const [recipientName, setRecipientName] = useState('');
+  const [recipientPhone, setRecipientPhone] = useState('');
   const [loading, setLoading] = useState(false);
 
   // Rajaongkir Search states
@@ -113,6 +116,14 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
   };
 
   // Select destination option & trigger cost lookup
+  const calcCartWeight = () => {
+    const totalGrams = itemsToCheckout.reduce((sum, item) => {
+      const w = parseFloat(item.weight) || 100;
+      return sum + w * item.quantity;
+    }, 0);
+    return Math.max(1, Math.ceil(totalGrams / 1000));
+  };
+
   const handleSelectDestination = async (option) => {
     setSelectedDestination(option);
     setDestSearch(option.label);
@@ -122,19 +133,33 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
 
     setRatesLoading(true);
     try {
+      const cartWeight = calcCartWeight();
       const res = await request.post(API_ENDPOINTS.SHIPPING.COST, {
         destination: option.id,
-        weight: 1
+        weight: cartWeight
       });
       if (res.success) {
-        // Filter by user required couriers: Jne, sicepat, ide, jnt, anteraja, pos, wahana
         const allowed = ['jne', 'sicepat', 'ide', 'jnt', 'anteraja', 'pos', 'wahana'];
-        const filtered = (res.data || []).filter(rate => 
+        const filtered = (res.data || []).filter(rate =>
           allowed.includes(rate.code.toLowerCase())
         );
-        setShippingRates(filtered);
-        if (filtered.length > 0) {
-          setSelectedRate(filtered[0]);
+        // Add JNT COD options (ongkir bayar saat terima, tampil coret 50%)
+        const expanded = [];
+        filtered.forEach(rate => {
+          expanded.push(rate);
+          if (rate.code.toLowerCase() === 'jnt') {
+            expanded.push({
+              ...rate,
+              service: `${rate.service} (COD Ongkir)`,
+              isCod: true,
+              originalCost: rate.cost,
+              codDisplayCost: Math.round(rate.cost * 0.5)
+            });
+          }
+        });
+        setShippingRates(expanded);
+        if (expanded.length > 0) {
+          setSelectedRate(expanded[0]);
         } else {
           toast.error('Ekspedisi yang didukung tidak tersedia untuk lokasi ini.');
         }
@@ -179,8 +204,11 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
   };
 
   const productTotal = itemsToCheckout.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
-  const shippingCost = selectedRate ? parseFloat(selectedRate.cost) : 0;
+  const isCodShipping = selectedRate?.isCod === true;
+  const shippingCostOriginal = selectedRate ? (selectedRate.originalCost || selectedRate.cost) : 0;
+  const shippingCost = isCodShipping ? 0 : (selectedRate ? parseFloat(selectedRate.cost) : 0);
   const finalTotal = productTotal + shippingCost;
+  const cartWeightKg = calcCartWeight();
 
   // Submit checkout
   const handleSubmitCheckout = async (e) => {
@@ -206,6 +234,14 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
       toast.error('Alamat detail pengiriman wajib diisi.');
       return;
     }
+    if (!recipientName.trim()) {
+      toast.error('Nama penerima wajib diisi.');
+      return;
+    }
+    if (!recipientPhone.trim()) {
+      toast.error('Nomor HP penerima wajib diisi.');
+      return;
+    }
     if (!selectedPayment) {
       toast.error('Pilih metode pembayaran.');
       return;
@@ -229,12 +265,16 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
           quantity: item.quantity
         })),
         shipping_address: fullAddress,
+        recipient_name: recipientName.trim(),
+        recipient_phone: recipientPhone.trim(),
         notes: shippingNotes,
         order_date: new Date(checkoutDate + 'T12:00:00').toISOString(),
         shipping_cost: shippingCost,
+        shipping_cost_original: shippingCostOriginal,
         shipping_courier: selectedRate.name,
         shipping_service: selectedRate.service,
         shipping_etd: selectedRate.etd || '2-3 hari',
+        shipping_cod: isCodShipping,
         payment_method_id: selectedPayment.id,
         payment_method_name: selectedPayment.name,
         payment_receipt: receiptUrl
@@ -244,11 +284,20 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
       if (res.success) {
         toast.success('Pesanan berhasil dibuat!');
         if (!directItems) {
-          // If checkout from cart, clear general cart
           onClearCart();
         }
         onOrderSuccess();
-        navigate('/orders');
+
+        const orderNum = res.data.order_number;
+        const waNum = res.data.whatsapp_number || '6281234567890';
+        const orderLink = `${window.location.origin}/pesanan/${orderNum}`;
+        const waText = encodeURIComponent(
+          `Halo, saya sudah order dengan no pesanan ${orderNum}.\n` +
+          `Total barang: Rp ${productTotal.toLocaleString('id-ID')}\n` +
+          `Mohon kabari ongkirnya berapa ya.\n` +
+          `Link pesanan: ${orderLink}`
+        );
+        window.location.href = `https://wa.me/${waNum}?text=${waText}`;
       } else {
         toast.error(res.message || 'Gagal memproses pesanan.');
       }
@@ -314,9 +363,22 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
                         </div>
                         
                         <div className="flex items-center gap-3">
-                          <span className="text-[10px] font-bold text-slate-500 bg-white border border-slate-200 px-3 py-1 rounded-full">
-                            {item.quantity} Pasang
-                          </span>
+                          {!directItems ? (
+                            <QuantityInput
+                              value={item.quantity}
+                              onChange={(qty) => onUpdateQuantity(item.variant_id, qty)}
+                              min={1}
+                              max={item.stock}
+                            />
+                          ) : (
+                            <QuantityInput
+                              value={item.quantity}
+                              onChange={() => {}}
+                              min={1}
+                              max={item.stock}
+                              disabled
+                            />
+                          )}
                           {!directItems && (
                             <button
                               type="button"
@@ -405,7 +467,7 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
                           {shippingRates.map((rate, idx) => {
                             const courierCode = rate.code.toLowerCase();
                             const logo = courierLogos[courierCode] || null;
-                            const isSelected = selectedRate?.code === rate.code && selectedRate?.service === rate.service;
+                            const isSelected = selectedRate?.code === rate.code && selectedRate?.service === rate.service && !!selectedRate?.isCod === !!rate.isCod;
 
                             return (
                               <label
@@ -432,9 +494,20 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
                                   <p className="text-xs font-black text-slate-950 uppercase tracking-wider">{rate.name}</p>
                                   <p className="text-[10px] text-slate-700 font-medium leading-relaxed">{rate.service} - {rate.description}</p>
                                   <div className="flex flex-wrap items-center gap-2.5 pt-1.5">
-                                    <span className="text-xs font-black text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full">
-                                      Rp {rate.cost.toLocaleString('id-ID')}
-                                    </span>
+                                    {rate.isCod ? (
+                                      <>
+                                        <span className="text-xs text-slate-400 line-through">
+                                          Rp {rate.originalCost.toLocaleString('id-ID')}
+                                        </span>
+                                        <span className="text-xs font-black text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-full">
+                                          COD ~Rp {rate.codDisplayCost.toLocaleString('id-ID')} (bayar saat terima)
+                                        </span>
+                                      </>
+                                    ) : (
+                                      <span className="text-xs font-black text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full">
+                                        Rp {rate.cost.toLocaleString('id-ID')}
+                                      </span>
+                                    )}
                                     <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded-full">
                                       Estimasi: {rate.etd || '3 hari'}
                                     </span>
@@ -447,6 +520,36 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
                       </div>
                     )
                   )}
+
+                  {/* Recipient Info */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[9px] font-bold text-slate-750 uppercase tracking-widest mb-1.5">
+                        <User size={10} className="inline mr-1" /> Nama Penerima
+                      </label>
+                      <input
+                        type="text"
+                        value={recipientName}
+                        onChange={(e) => setRecipientName(e.target.value)}
+                        className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all font-medium"
+                        placeholder="Nama lengkap penerima"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[9px] font-bold text-slate-750 uppercase tracking-widest mb-1.5">
+                        <Phone size={10} className="inline mr-1" /> No. HP Penerima
+                      </label>
+                      <input
+                        type="tel"
+                        value={recipientPhone}
+                        onChange={(e) => setRecipientPhone(e.target.value)}
+                        className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all font-medium"
+                        placeholder="08xxxxxxxxxx"
+                        required
+                      />
+                    </div>
+                  </div>
 
                   {/* Detail Address */}
                   <div>
@@ -476,6 +579,10 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
                       placeholder="Contoh: Hubungi nomor sebelum mengirim."
                     />
                   </div>
+
+                  <p className="text-[10px] text-amber-700 bg-amber-50 border border-amber-100 p-3 rounded-xl font-medium">
+                    * Besaran ongkir untuk layanan non-COD bisa langsung chat admin via WhatsApp setelah order.
+                  </p>
                 </div>
 
               </div>
@@ -610,13 +717,23 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
                     <span className="font-extrabold text-slate-950">Rp {productTotal.toLocaleString('id-ID')}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Ongkos Kirim ({selectedRate ? selectedRate.name : 'Belum dipilih'}):</span>
-                    <span className="font-extrabold text-slate-950">Rp {shippingCost.toLocaleString('id-ID')}</span>
+                    <span>Ongkos Kirim ({selectedRate ? selectedRate.name : 'Belum dipilih'}{isCodShipping ? ' COD' : ''}):</span>
+                    {isCodShipping ? (
+                      <span className="font-extrabold text-amber-600">COD (bayar saat terima)</span>
+                    ) : (
+                      <span className="font-extrabold text-slate-950">Rp {shippingCost.toLocaleString('id-ID')}</span>
+                    )}
                   </div>
+                  <p className="text-[10px] text-slate-500">Estimasi berat: {cartWeightKg} kg</p>
                   <div className="flex justify-between border-t border-slate-100 pt-3 text-sm font-black text-slate-900">
-                    <span>Total Bayar:</span>
+                    <span>Total Bayar Sekarang:</span>
                     <span className="text-base text-emerald-600 tracking-wider">Rp {finalTotal.toLocaleString('id-ID')}</span>
                   </div>
+                  {isCodShipping && (
+                    <p className="text-[10px] text-amber-700 bg-amber-50 p-2 rounded-lg">
+                      Pembayaran transfer hanya untuk total barang. Ongkir JNT COD dibayar saat paket diterima.
+                    </p>
+                  )}
                 </div>
 
                 <button
@@ -627,7 +744,10 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
                   {loading ? (
                     <Loader2 size={16} className="animate-spin" />
                   ) : (
-                    'Selesaikan Pemesanan'
+                    <>
+                      <MessageCircle size={14} />
+                      Bayar & Hubungi via WhatsApp
+                    </>
                   )}
                 </button>
               </div>

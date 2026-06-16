@@ -19,9 +19,11 @@ export const API_ENDPOINTS = {
   ORDERS: {
     LIST: "/orders",
     CREATE: "/orders",
+    VIEW: (orderNumber) => `/orders/view/${orderNumber}`,
     STATUS: (id) => `/orders/${id}/status`,
     UPLOAD_RECEIPT: "/orders/upload-receipt",
   },
+  LOOKUP: "/lookup",
   STOCK: {
     LOGS: "/stock/logs",
     ADJUST: "/stock/adjust",
