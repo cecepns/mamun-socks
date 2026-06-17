@@ -47,6 +47,25 @@ export const ProductDetail = ({ user, onAddToCart, cart, onLogout }) => {
     fetchProduct();
   }, [id, navigate]);
 
+  // Sync gallery when variant changes
+  useEffect(() => {
+    if (!product) return;
+    const variant = product.variants?.find(
+      v => v.model === selectedModel && v.color === selectedColor
+    );
+    const base = product.images || [];
+    if (variant?.image) {
+      const gallery = base.includes(variant.image)
+        ? base
+        : [variant.image, ...base];
+      const idx = gallery.indexOf(variant.image);
+      setActiveImageIndex(idx >= 0 ? idx : 0);
+    } else {
+      setActiveImageIndex(0);
+    }
+    setActiveMedia('image');
+  }, [product, selectedModel, selectedColor]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -145,6 +164,20 @@ export const ProductDetail = ({ user, onAddToCart, cart, onLogout }) => {
   };
 
   const images = product.images || [];
+  const galleryImages = (() => {
+    const base = [...images];
+    if (selectedVariant?.image && !base.includes(selectedVariant.image)) {
+      return [selectedVariant.image, ...base];
+    }
+    return base;
+  })();
+
+  const mainImageSrc = (() => {
+    if (galleryImages.length > 0) {
+      return getAssetURL(galleryImages[activeImageIndex] || galleryImages[0]);
+    }
+    return '/logo.png';
+  })();
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 pb-20 selection:bg-slate-900 selection:text-white">
@@ -170,7 +203,7 @@ export const ProductDetail = ({ user, onAddToCart, cart, onLogout }) => {
               <div className="relative aspect-[4/5] w-full rounded-2xl bg-slate-50 overflow-hidden border border-slate-100 flex items-center justify-center">
                 {activeMedia === 'image' ? (
                   <img
-                    src={selectedVariant?.image ? getAssetURL(selectedVariant.image) : (images.length > 0 ? getAssetURL(images[activeImageIndex]) : '/logo.png')}
+                    src={mainImageSrc}
                     alt={product.name}
                     className="w-full h-full object-cover"
                   />
@@ -188,7 +221,7 @@ export const ProductDetail = ({ user, onAddToCart, cart, onLogout }) => {
 
               {/* Thumbnails */}
               <div className="flex gap-2.5 overflow-x-auto pb-1.5 scrollbar-thin">
-                {images.map((img, idx) => (
+                {galleryImages.map((img, idx) => (
                   <button
                     key={idx}
                     onClick={() => { setActiveMedia('image'); setActiveImageIndex(idx); }}
@@ -282,7 +315,7 @@ export const ProductDetail = ({ user, onAddToCart, cart, onLogout }) => {
                     <div className="space-y-1">
                       {selectedVariant.pricing_tiers.map((tier, i) => (
                         <p key={i} className="text-[10px] text-amber-900 font-semibold">
-                          {tier.min_qty} — {tier.max_qty >= 999999 ? '∞' : tier.max_qty} pasang: Rp {parseFloat(tier.price).toLocaleString('id-ID')}
+                          {tier.min_qty} — {tier.max_qty >= 999999 ? '∞' : tier.max_qty} pcs: Rp {parseFloat(tier.price).toLocaleString('id-ID')}
                         </p>
                       ))}
                     </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Eye, ClipboardList, Clock, CheckCircle, XCircle, ChevronLeft, ChevronRight, Printer, Link2 } from 'lucide-react';
+import { Search, Eye, ClipboardList, Clock, CheckCircle, XCircle, ChevronLeft, ChevronRight, Printer, Link2, Upload, Loader2, ExternalLink } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { request } from '../utils/request';
 import { getAssetURL } from '../utils/api';
@@ -22,6 +22,7 @@ export const AdminOrders = () => {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [showInvoice, setShowInvoice] = useState(false);
   const [statusLoading, setStatusLoading] = useState(false);
+  const [shippingReceiptUploading, setShippingReceiptUploading] = useState(false);
 
   const calcProfit = (order) => {
     if (!order?.items) return 0;
@@ -85,6 +86,38 @@ export const AdminOrders = () => {
       toast.error(error.message || 'Gagal mengubah status pesanan.', { id: statusToast });
     } finally {
       setStatusLoading(false);
+    }
+  };
+
+  const handleShippingReceiptUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !selectedOrder) return;
+
+    setShippingReceiptUploading(true);
+    const uploadToast = toast.loading('Mengunggah bukti resi...');
+    try {
+      const formData = new FormData();
+      formData.append('receipt', file);
+      const uploadRes = await request.post(API_ENDPOINTS.ORDERS.UPLOAD_SHIPPING_RECEIPT, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      if (!uploadRes.success) {
+        throw new Error(uploadRes.message || 'Gagal mengunggah file.');
+      }
+      const saveRes = await request.put(API_ENDPOINTS.ORDERS.SHIPPING_RECEIPT(selectedOrder.id), {
+        shipping_receipt: uploadRes.data.file_path
+      });
+      if (saveRes.success) {
+        const updatedPath = uploadRes.data.file_path;
+        setSelectedOrder({ ...selectedOrder, shipping_receipt: updatedPath });
+        setOrders(prev => prev.map(o => o.id === selectedOrder.id ? { ...o, shipping_receipt: updatedPath } : o));
+        toast.success('Bukti resi pengiriman berhasil diunggah.', { id: uploadToast });
+      }
+    } catch (error) {
+      toast.error(error.message || 'Gagal mengunggah bukti resi.', { id: uploadToast });
+    } finally {
+      setShippingReceiptUploading(false);
+      e.target.value = '';
     }
   };
 
@@ -275,6 +308,35 @@ export const AdminOrders = () => {
                     <p className="text-slate-500">{selectedOrder.shipping_service} ({selectedOrder.shipping_etd})</p>
                   </div>
                 )}
+                <div className="mt-3">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">Bukti Resi Pengiriman</p>
+                  {selectedOrder.shipping_receipt ? (
+                    <div className="space-y-2">
+                      <div className="w-24 h-28 bg-white border border-slate-200 rounded-lg overflow-hidden p-0.5 shadow-sm">
+                        <img
+                          src={getAssetURL(selectedOrder.shipping_receipt)}
+                          alt="Bukti Resi"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <a
+                        href={getAssetURL(selectedOrder.shipping_receipt)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 text-[9px] text-emerald-600 font-bold hover:underline uppercase tracking-wider"
+                      >
+                        Buka Gambar Penuh <ExternalLink size={10} />
+                      </a>
+                    </div>
+                  ) : (
+                    <p className="text-slate-400 font-medium italic text-[10px]">Belum ada bukti resi</p>
+                  )}
+                  <label className={`mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 border border-dashed rounded-lg text-[10px] font-bold cursor-pointer transition-all ${shippingReceiptUploading ? 'opacity-50 pointer-events-none border-slate-200 text-slate-400' : 'border-emerald-300 text-emerald-700 hover:bg-emerald-50'}`}>
+                    {shippingReceiptUploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+                    {selectedOrder.shipping_receipt ? 'Ganti Bukti Resi' : 'Upload Bukti Resi'}
+                    <input type="file" accept="image/*" className="hidden" onChange={handleShippingReceiptUpload} disabled={shippingReceiptUploading} />
+                  </label>
+                </div>
                 {selectedOrder.notes && (
                   <div className="mt-2 text-slate-550 bg-white p-2 border border-slate-100 rounded-lg">
                     <span className="font-semibold text-slate-655">Catatan:</span> {selectedOrder.notes}
@@ -345,7 +407,7 @@ export const AdminOrders = () => {
                         <td className="p-3 capitalize">{item.model} - {item.color}</td>
                         <td className="p-3 text-right">Rp {parseFloat(item.price).toLocaleString('id-ID')}</td>
                         <td className="p-3 text-right text-slate-500">Rp {parseFloat(item.cost_price || 0).toLocaleString('id-ID')}</td>
-                        <td className="p-3 text-center font-semibold">{item.quantity} pasang</td>
+                        <td className="p-3 text-center font-semibold">{item.quantity}</td>
                         <td className="p-3 text-right font-semibold text-slate-800">
                           Rp {(parseFloat(item.price) * item.quantity).toLocaleString('id-ID')}
                         </td>

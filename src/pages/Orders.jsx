@@ -132,7 +132,7 @@ export const Orders = ({ user, cart, onLogout }) => {
                               />
                               <div>
                                 <h5 className="text-xs font-bold text-slate-900 uppercase tracking-wider">{item.product_name}</h5>
-                                <p className="text-[10px] text-slate-600 capitalize font-semibold mt-0.5">{item.model} - {item.color} x {item.quantity} pasang</p>
+                                <p className="text-[10px] text-slate-600 capitalize font-semibold mt-0.5">{item.model} - {item.color} x {item.quantity}</p>
                               </div>
                             </div>
                             <span className="text-xs font-bold text-slate-900 tracking-wider">
@@ -171,6 +171,18 @@ export const Orders = ({ user, cart, onLogout }) => {
                               className="inline-flex items-center gap-1 text-[10px] text-emerald-600 font-bold hover:underline"
                             >
                               Lihat Bukti Transfer <ExternalLink size={10} />
+                            </a>
+                          </div>
+                        )}
+                        {order.shipping_receipt && (
+                          <div className="pt-0.5">
+                            <a
+                              href={getAssetURL(order.shipping_receipt)}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1 text-[10px] text-blue-600 font-bold hover:underline"
+                            >
+                              Lihat Bukti Resi Pengiriman <ExternalLink size={10} />
                             </a>
                           </div>
                         )}

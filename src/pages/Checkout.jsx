@@ -121,7 +121,7 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
       const w = parseFloat(item.weight) || 100;
       return sum + w * item.quantity;
     }, 0);
-    return Math.max(1, Math.ceil(totalGrams / 1000));
+    return Math.max(1, Math.ceil(totalGrams));
   };
 
   const handleSelectDestination = async (option) => {
@@ -208,7 +208,7 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
   const shippingCostOriginal = selectedRate ? (selectedRate.originalCost || selectedRate.cost) : 0;
   const shippingCost = isCodShipping ? 0 : (selectedRate ? parseFloat(selectedRate.cost) : 0);
   const finalTotal = productTotal + shippingCost;
-  const cartWeightKg = calcCartWeight();
+  const cartWeightGrams = calcCartWeight();
 
   // Submit checkout
   const handleSubmitCheckout = async (e) => {
@@ -724,7 +724,7 @@ export const Checkout = ({ user, cartItems, onUpdateQuantity, onRemoveFromCart, 
                       <span className="font-extrabold text-slate-950">Rp {shippingCost.toLocaleString('id-ID')}</span>
                     )}
                   </div>
-                  <p className="text-[10px] text-slate-500">Estimasi berat: {cartWeightKg} kg</p>
+                  <p className="text-[10px] text-slate-500">Estimasi berat: {cartWeightGrams.toLocaleString('id-ID')} gram ({(cartWeightGrams / 1000).toFixed(2)} kg)</p>
                   <div className="flex justify-between border-t border-slate-100 pt-3 text-sm font-black text-slate-900">
                     <span>Total Bayar Sekarang:</span>
                     <span className="text-base text-emerald-600 tracking-wider">Rp {finalTotal.toLocaleString('id-ID')}</span>

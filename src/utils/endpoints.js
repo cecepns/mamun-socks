@@ -22,6 +22,8 @@ export const API_ENDPOINTS = {
     VIEW: (orderNumber) => `/orders/view/${orderNumber}`,
     STATUS: (id) => `/orders/${id}/status`,
     UPLOAD_RECEIPT: "/orders/upload-receipt",
+    UPLOAD_SHIPPING_RECEIPT: "/orders/upload-shipping-receipt",
+    SHIPPING_RECEIPT: (id) => `/orders/${id}/shipping-receipt`,
   },
   LOOKUP: "/lookup",
   STOCK: {

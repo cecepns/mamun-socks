@@ -89,6 +89,15 @@ export const OrderDetail = ({ user, cart, onLogout }) => {
                 </div>
               )}
 
+              {order.shipping_receipt && (
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">Bukti Resi Pengiriman</p>
+                  <a href={getAssetURL(order.shipping_receipt)} target="_blank" rel="noreferrer">
+                    <img src={getAssetURL(order.shipping_receipt)} alt="Bukti Resi" className="w-32 h-40 object-cover rounded-xl border border-slate-200" />
+                  </a>
+                </div>
+              )}
+
               <div className="border-t border-slate-100 pt-4 space-y-3">
                 <p className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1"><Package size={12} /> Item Pesanan</p>
                 {order.items?.map((item, idx) => (
@@ -96,7 +105,7 @@ export const OrderDetail = ({ user, cart, onLogout }) => {
                     <div>
                       <p className="font-bold text-slate-800">{item.product_name}</p>
                       <p className="text-slate-500 capitalize">{item.model} - {item.color} {item.sku ? `• ${item.sku}` : ''}</p>
-                      <p className="text-slate-600">{item.quantity} pasang × Rp {parseFloat(item.price).toLocaleString('id-ID')}</p>
+                      <p className="text-slate-600">{item.quantity} × Rp {parseFloat(item.price).toLocaleString('id-ID')}</p>
                     </div>
                     <p className="font-bold text-slate-900">Rp {(parseFloat(item.price) * item.quantity).toLocaleString('id-ID')}</p>
                   </div>

@@ -25,6 +25,9 @@ export const AdminProducts = () => {
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
   const [weight, setWeight] = useState('100');
+  const [length, setLength] = useState('');
+  const [width, setWidth] = useState('');
+  const [height, setHeight] = useState('');
   const [images, setImages] = useState([]);
   const [video, setVideo] = useState('');
   const [variants, setVariants] = useState([]); // [{id, model, color, stock}]
@@ -66,9 +69,12 @@ export const AdminProducts = () => {
     setDescription('');
     setPrice('');
     setWeight('100');
+    setLength('');
+    setWidth('');
+    setHeight('');
     setImages([]);
     setVideo('');
-    setVariants([{ model: 'Nike', color: 'merah', price: 8000, cost_price: 5000, stock: 10, pricing_tiers: [] }]);
+    setVariants([{ sku: '', model: 'Nike', color: 'merah', price: 8000, cost_price: 5000, stock: 10, weight: '', length: '', width: '', height: '', pricing_tiers: [] }]);
     setIsModalOpen(true);
   };
 
@@ -79,6 +85,9 @@ export const AdminProducts = () => {
     setDescription(product.description || '');
     setPrice(product.price);
     setWeight(product.weight || '100');
+    setLength(product.length || '');
+    setWidth(product.width || '');
+    setHeight(product.height || '');
     setImages(product.images || []);
     setVideo(product.video || '');
     setVariants(product.variants?.map(v => ({
@@ -91,6 +100,9 @@ export const AdminProducts = () => {
       stock: v.stock,
       image: v.image || '',
       weight: v.weight || '',
+      length: v.length || '',
+      width: v.width || '',
+      height: v.height || '',
       pricing_tiers: v.pricing_tiers || []
     })) || []);
     setIsModalOpen(true);
@@ -132,7 +144,7 @@ export const AdminProducts = () => {
 
   // Variant helper functions
   const addVariantRow = () => {
-    setVariants([...variants, { model: '', color: '', price: price || 0, cost_price: 0, stock: 0, image: '', pricing_tiers: [] }]);
+    setVariants([...variants, { sku: '', model: '', color: '', price: price || 0, cost_price: 0, stock: 0, image: '', weight: '', length: '', width: '', height: '', pricing_tiers: [] }]);
   };
 
   const removeVariantRow = (idx) => {
@@ -226,10 +238,14 @@ export const AdminProducts = () => {
         description,
         price: parseFloat(price),
         weight: parseFloat(weight) || 100,
+        length: length ? parseFloat(length) : null,
+        width: width ? parseFloat(width) : null,
+        height: height ? parseFloat(height) : null,
         images,
         video,
         variants: variants.map(v => ({
           id: v.id,
+          sku: (v.sku || '').trim() || null,
           model: v.model.trim(),
           color: v.color.trim(),
           price: parseFloat(v.price) || parseFloat(price) || 0,
@@ -237,6 +253,9 @@ export const AdminProducts = () => {
           stock: parseInt(v.stock) || 0,
           image: v.image || null,
           weight: v.weight ? parseFloat(v.weight) : null,
+          length: v.length ? parseFloat(v.length) : null,
+          width: v.width ? parseFloat(v.width) : null,
+          height: v.height ? parseFloat(v.height) : null,
           pricing_tiers: (v.pricing_tiers || []).map(t => ({
             min_qty: parseInt(t.min_qty),
             max_qty: parseInt(t.max_qty),
@@ -484,7 +503,7 @@ export const AdminProducts = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">Berat per Pasang (gram)</label>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Berat (gram)</label>
                 <input
                   type="number"
                   value={weight}
@@ -492,6 +511,40 @@ export const AdminProducts = () => {
                   className="block w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
                   placeholder="100"
                 />
+                <p className="text-[10px] text-slate-400 mt-1">Digunakan untuk hitung ongkir (Raja Ongkir pakai gram).</p>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Panjang (cm)</label>
+                  <input
+                    type="number"
+                    value={length}
+                    onChange={(e) => setLength(e.target.value)}
+                    className="block w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                    placeholder="20"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Lebar (cm)</label>
+                  <input
+                    type="number"
+                    value={width}
+                    onChange={(e) => setWidth(e.target.value)}
+                    className="block w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                    placeholder="15"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Tinggi (cm)</label>
+                  <input
+                    type="number"
+                    value={height}
+                    onChange={(e) => setHeight(e.target.value)}
+                    className="block w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                    placeholder="10"
+                  />
+                </div>
               </div>
 
               <div>
@@ -575,7 +628,7 @@ export const AdminProducts = () => {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Spesifikasi Model & Warna (Variasi)</h4>
-                <p className="text-[10px] text-slate-400">Atur harga dan stok per kombinasi model dan warna kaos kaki.</p>
+                <p className="text-[10px] text-slate-400">Atur harga, stok, berat & volume per kombinasi model dan warna.</p>
               </div>
               <button
                 type="button"
@@ -590,7 +643,12 @@ export const AdminProducts = () => {
               {variants.map((v, idx) => (
                 <div key={idx} className="p-3 bg-slate-50 border border-slate-100 rounded-2xl space-y-3">
                   <div className="flex items-start gap-3">
-                    <div className="flex-1 grid grid-cols-2 sm:grid-cols-5 gap-3">
+                    <div className="flex-1 grid grid-cols-2 sm:grid-cols-6 gap-3">
+                      <div>
+                        <label className="block text-[9px] font-bold text-slate-500 uppercase mb-1">SKU</label>
+                        <input type="text" value={v.sku || ''} onChange={(e) => updateVariantRow(idx, 'sku', e.target.value)}
+                          className="block w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-mono" placeholder="Auto jika kosong" />
+                      </div>
                       <div>
                         <label className="block text-[9px] font-bold text-slate-500 uppercase mb-1">Model</label>
                         <input type="text" value={v.model} onChange={(e) => updateVariantRow(idx, 'model', e.target.value)}
@@ -623,8 +681,30 @@ export const AdminProducts = () => {
                     </button>
                   </div>
 
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pl-0 sm:pl-0">
+                    <div>
+                      <label className="block text-[9px] font-bold text-slate-500 uppercase mb-1">Berat (gram)</label>
+                      <input type="number" value={v.weight || ''} onChange={(e) => updateVariantRow(idx, 'weight', e.target.value)}
+                        className="block w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs" placeholder="Default produk" />
+                    </div>
+                    <div>
+                      <label className="block text-[9px] font-bold text-slate-500 uppercase mb-1">Panjang (cm)</label>
+                      <input type="number" value={v.length || ''} onChange={(e) => updateVariantRow(idx, 'length', e.target.value)}
+                        className="block w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs" placeholder="Default produk" />
+                    </div>
+                    <div>
+                      <label className="block text-[9px] font-bold text-slate-500 uppercase mb-1">Lebar (cm)</label>
+                      <input type="number" value={v.width || ''} onChange={(e) => updateVariantRow(idx, 'width', e.target.value)}
+                        className="block w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs" placeholder="Default produk" />
+                    </div>
+                    <div>
+                      <label className="block text-[9px] font-bold text-slate-500 uppercase mb-1">Tinggi (cm)</label>
+                      <input type="number" value={v.height || ''} onChange={(e) => updateVariantRow(idx, 'height', e.target.value)}
+                        className="block w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs" placeholder="Default produk" />
+                    </div>
+                  </div>
+
                   <div className="flex items-center gap-3 flex-wrap">
-                    {v.sku && <span className="text-[10px] font-mono bg-slate-200 px-2 py-0.5 rounded text-slate-700">SKU: {v.sku}</span>}
                     <label className="text-[10px] font-bold text-emerald-600 cursor-pointer hover:underline">
                       + Gambar Variasi
                       <input type="file" accept="image/*" className="hidden" onChange={(e) => handleVariantImageUpload(idx, e)} />
@@ -640,7 +720,7 @@ export const AdminProducts = () => {
                       <span className="text-xs text-slate-400">—</span>
                       <input type="number" value={tier.max_qty} onChange={(e) => updateTierRow(idx, ti, 'max_qty', e.target.value)}
                         className="w-16 px-2 py-1 text-xs border rounded-lg" placeholder="Max" />
-                      <span className="text-xs text-slate-500">pasang =</span>
+                      <span className="text-xs text-slate-500">pcs =</span>
                       <input type="number" value={tier.price} onChange={(e) => updateTierRow(idx, ti, 'price', e.target.value)}
                         className="w-24 px-2 py-1 text-xs border rounded-lg font-semibold" placeholder="Harga" />
                       <button type="button" onClick={() => removeTierRow(idx, ti)} className="text-red-400 hover:text-red-600"><Trash2 size={10} /></button>
